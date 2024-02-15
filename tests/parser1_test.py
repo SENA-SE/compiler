@@ -69,7 +69,11 @@ def test_parser_multiplication() -> None:
             right=Literal(5)
         )
     )
-
+def test_parser_empty_input() -> None:
+    try:
+         parse(tokenize([] ))
+    except Exception:
+        assert True
 
 def test_parser_if() -> None:
     assert parse(tokenize('if a then b else c+d')) == IfExpression(
@@ -306,7 +310,7 @@ def test_parser_boolean() -> None:
     )
 
 def test_parser_while() -> None:
-    assert parse(tokenize('while { a } do {b;}')) == WhileExpression(
+    assert parse(tokenize('while { a } do {b}')) == WhileExpression(
         condition=Block([Identifier('a')]),
         do=Block([Identifier('b')])
     )

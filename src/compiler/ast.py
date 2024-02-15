@@ -52,3 +52,11 @@ class VariableDeclaration(Expression):
 class WhileExpression(Expression):
     condition: Expression
     do: Expression
+
+@dataclass
+class SymTab():
+    variables: dict
+
+@dataclass
+class HierarchicalSymTab(SymTab):
+    parent: SymTab
