@@ -5,6 +5,13 @@ from dataclasses import dataclass
 @dataclass
 class Expression:
     "Base class for expression AST nodes"
+@dataclass
+class Type:
+    "basic class"
+
+@dataclass
+class FunType(Type):
+    name:str
 
 @dataclass
 class Identifier(Expression):
@@ -47,6 +54,7 @@ class Block(Expression):
 class VariableDeclaration(Expression):
     name: str
     assignment: Expression
+    type: Type
 
 @dataclass
 class WhileExpression(Expression):
@@ -60,3 +68,4 @@ class SymTab():
 @dataclass
 class HierarchicalSymTab(SymTab):
     parent: SymTab
+
