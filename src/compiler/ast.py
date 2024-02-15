@@ -15,7 +15,7 @@ class Literal(Expression):
     value: int
 
 @dataclass
-class BinaryOperation(Expression):
+class BinaryOp(Expression):
     left:Expression
     operation: str
     right: Expression
@@ -26,5 +26,8 @@ class IfExpression(Expression):
     then_branch: Expression
     else_branch: Expression = None  
 
-
+@dataclass
+class Function(Expression):
+    name: str
+    args: list[Expression]
 
