@@ -8,17 +8,17 @@ SymbolList = {
     '-': lambda x, y: x - y,
     '*': lambda x, y: x * y,
     '/': lambda x, y: x // y,
-    '<': lambda x, y: x < y,
-    '>': lambda x, y: x > y,
-    '==': lambda x, y: x == y,
-    '<=': lambda x, y: x <= y,
-    '==': lambda x, y: x == y,
-    '==': lambda x, y: x == y,
     '%': lambda x, y: x % y,
-    'and': lambda x, y: False if not x else x and y,
+    '<': lambda x, y: x < y,
+    '<=': lambda x, y: x <= y,
+    '>': lambda x, y: x > y,
+    '>=': lambda x, y: x >= y,
+    '==': lambda x, y: x == y,
     'or': lambda x, y: True if x else y,
+    'and': lambda x, y: False if not x else x and y,
 
-    'unary_negative': lambda x: not x if isinstance(x, bool) else -x,
+
+    'unary': lambda x: not x if isinstance(x, bool) else -x,
 }
 def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variables=SymbolList)) -> Value:
     match node:
@@ -56,20 +56,29 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             else:
                 raise Exception(f'{node.name} is not defined')
             
-        # case ast.UnaryOp():
-        #     x: Any = interpret(node.right, symbol_table)
-        #     op = 'unary_negative'
-        #     top_symbol_table = symbol_table
-        #     while isinstance(top_symbol_table, HierarchicalSymTab):
-        #         top_symbol_table = top_symbol_table.parent
-        #     if op in top_symbol_table.variables:
-        #         return top_symbol_table.variables[op](x)
-        #     else:
-        #         raise Exception("Couldn't find unary operator")
-            
-def test_interpreter() -> None:
-    assert interpret(parse(tokenize('1+2'))) == 3
+        case ast.UnaryOp():
+            a: Any = interpret(node.right, symbol_table)
+            top_symbol_table = symbol_table
+            while isinstance(top_symbol_table, ast.HierarchicalSymTab):
+                top_symbol_table = top_symbol_table.parent
+            if 'unary' in top_symbol_table.variables:
+                operation_function = top_symbol_table.variables['unary']
+                return operation_function(a)
+            else:
+                raise Exception("Expected an unary operator")
 
-def test_interpreter_counts() -> None:
-    assert interpret(parse(tokenize('1 + 2 * 3'))) == 7
-test_interpreter()
+
+        case ast.VariableDeclaration():
+            symbol_table.variables[node.name] = interpret(node.assignment, symbol_table)
+
+        case ast.Block():
+            variables = ast.HierarchicalSymTab({}, symbol_table)
+            for i in range(0, len(node.expressions)-1):
+                interpret(node.expressions[i], variables)
+
+            return interpret(node.expressions[len(node.expressions)-1], variables)
+
+        case _:
+            raise Exception(f'{node} is not supported')
+
+            
