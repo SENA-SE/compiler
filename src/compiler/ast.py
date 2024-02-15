@@ -31,3 +31,8 @@ class Function(Expression):
     name: str
     args: list[Expression]
 
+@dataclass
+class UnaryOp(Expression):
+    operation: str
+    right: Expression
+

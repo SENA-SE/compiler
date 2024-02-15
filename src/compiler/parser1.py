@@ -2,6 +2,8 @@ from compiler import ast
 from compiler.tokenizer import Token
 from compiler.tokenizer import tokenize
 
+
+
 def parse(tokens: list[Token]) -> ast.Expression:
     pos = 0
     # 'peek()' returns the token at 'pos',
@@ -89,6 +91,8 @@ def parse(tokens: list[Token]) -> ast.Expression:
             return parse_parenthesized()
         elif peek().text == 'if':
             return parse_if()
+        elif peek().text in ['not', '-']:
+            return parse_unary()
         elif peek().type == 'int_literal':
             return parse_int_literal()
         elif peek().type == 'identifier':
@@ -116,17 +120,9 @@ def parse(tokens: list[Token]) -> ast.Expression:
             else_branch = parse_expression()
         else:   else_branch = None
         return ast.IfExpression(condition=condition, then_branch=then_branch, else_branch=else_branch)
-    # This is our main parsing function for this example.
-    # To parse "integer + integer" expressions,
-    # it uses `parse_int_literal` to parse the first integer,
-    # then it checks that there's a supported operator,
-    # and finally it uses `parse_int_literal` to parse the
-    # second integer.
-    def parse_expression() -> ast.Expression:
-
+    def parse_calculation() -> ast.Expression:
         # Parse the first term.
         left = parse_term()
-
         # While there are more `+` or '-'...
         while peek().text in ['+', '-']:
             # Move past the '+' or '-'.
@@ -144,13 +140,55 @@ def parse(tokens: list[Token]) -> ast.Expression:
             )
         
         return left
+
+    def parse_unary()-> ast.Expression:
+        operation = peek().text
+        consume()
+        if peek().text in ['not','-']:
+            right = parse_unary()
+        else:
+            right = parse_expression()
+        return ast.UnaryOp(operation=operation, right=right)
+
+
+    # This is our main parsing function for this example.
+    # To parse "integer + integer" expressions,
+    # it uses `parse_int_literal` to parse the first integer,
+    # then it checks that there's a supported operator,
+    # and finally it uses `parse_int_literal` to parse the
+    # second integer.
+    def parse_expression() -> ast.Expression:
+
+        left = parse_calculation()
+        
+        if peek().text == '=':
+            consume('=')
+            operation = '='
+            right = parse_expression()
+            return ast.BinaryOp(left=left, operation=operation, right=right)
+        
+        while peek().text in ['==', '!=', '<','<=', '>', '>=','%']:
+            operation_token = consume()
+            right = parse_calculation()
+            left = ast.BinaryOp(left=left, operation=operation_token.text, right=right)
+        while peek().text in ['or', 'and']:
+            operation_token = consume(peek().text)
+            right=parse_expression()
+            left = ast.BinaryOp(left=left, operation=operation_token.text, right=right)
+        return left
     
 
     return parse_expression()
 
-# def test_parser_function() -> None:
-#     assert parse(tokenize('f(x, y)')) == ast.Function(
-#         name='f',
-#         args=[ast.Identifier(name='x'), ast.Identifier(name='y')]
+
+# def test_parser_or() -> None:
+#     assert parse(tokenize('if 1 or 2 then 3')) == ast.IfExpression(
+#         condition=ast.BinaryOp(
+#             left=ast.Literal(1),
+#             operation='and',
+#             right=ast.Literal(2)
+#         ),
+#         then_branch=ast.Literal(3),
+#         else_branch=None
 #     )
-# test_parser_function()
+# test_parser_or()

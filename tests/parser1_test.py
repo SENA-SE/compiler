@@ -1,5 +1,5 @@
 
-from compiler.ast import BinaryOp, IfExpression, Literal, Identifier, Function
+from compiler.ast import BinaryOp, IfExpression, Literal, Identifier, Function, UnaryOp
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 
@@ -107,4 +107,83 @@ def test_parser_function() -> None:
         left=Identifier(name='y'),
         operation='+',
         right=Identifier(name='z'))]
+    )
+
+def test_parser_unary_operation() -> None:
+    assert parse(tokenize('-1')) == UnaryOp(
+        operation='-',
+        right=Literal(1)
+    )
+
+def test_parser_unary_not() -> None:
+    assert parse(tokenize('not a')) == UnaryOp(
+        operation='not',
+        right=Identifier(name='a')
+    )
+
+def test_parser_comparison_with_calculation() -> None:
+    assert parse(tokenize('3 > 1+2')) == BinaryOp(
+        left=Literal(3),
+        operation='>',
+        right=BinaryOp(
+            left=Literal(1),
+            operation='+',
+            right=Literal(2)
+        )
+    )
+def test_parser_euqal() -> None:
+    assert parse(tokenize('1 == 1')) == BinaryOp(
+        left=Literal(1),
+        operation='==',
+        right=Literal(1)
+    )
+
+def test_parser_greater_than_or_equal() -> None:
+    assert parse(tokenize('3 >= 1+2')) == BinaryOp(
+        left=Literal(3),
+        operation='>=',
+        right=BinaryOp(
+            left=Literal(1),
+            operation='+',
+            right=Literal(2)
+        )
+    )
+
+def test_parser_reminder() -> None:
+    assert parse(tokenize('16 % a')) == BinaryOp(
+        left=Literal(16),
+        operation='%',
+        right=Identifier(name='a')
+    )
+
+
+
+def test_parser_or() -> None:
+    assert parse(tokenize('if 1 or 2 then 3')) == IfExpression(
+        condition=BinaryOp(
+            left=Literal(1),
+            operation='or',
+            right=Literal(2)
+        ),
+        then_branch=Literal(3),
+        else_branch=None
+    )
+
+def test_parser_and() -> None:
+    assert parse(tokenize('if a < b and a < c then 1')) == IfExpression(
+        condition=BinaryOp(
+            left=BinaryOp(
+                left=Identifier('a'),
+                operation='<',
+                right=Identifier('b')
+            ),
+            operation='and',
+            right=BinaryOp(
+                left=Identifier('a'),
+                operation='<',
+                right=Identifier('c')
+            ),
+        ),
+        then_branch=Literal(1),
+        else_branch=None
     )
