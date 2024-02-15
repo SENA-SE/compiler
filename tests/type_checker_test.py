@@ -1,8 +1,8 @@
 
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
-from compiler.type_checker import Bool, Int, Unit, typecheck
-
+from compiler.type_checker import  typecheck
+from compiler.ast import Bool, Int, Unit
 def test_type_checker_int() -> None:
     assert typecheck(parse(tokenize('1 + 2'))) == Int
 def test_type_checker_bool() -> None:

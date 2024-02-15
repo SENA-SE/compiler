@@ -1,9 +1,7 @@
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 import compiler.ast as ast
-Int = ast.FunType('Int')
-Bool = ast.FunType('Bool')
-Unit = ast.FunType('Unit')
+from compiler.ast import Int, Bool, Unit
 SymbolList = {
     '+': (Int, Int, Int),
     '<': (Int, Int, Int),

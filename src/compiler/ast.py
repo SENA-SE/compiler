@@ -54,7 +54,7 @@ class Block(Expression):
 class VariableDeclaration(Expression):
     name: str
     assignment: Expression
-    type: Type
+    type: Type = None
 
 @dataclass
 class WhileExpression(Expression):
@@ -69,3 +69,6 @@ class SymTab():
 class HierarchicalSymTab(SymTab):
     parent: SymTab
 
+Int = FunType('Int')
+Bool = FunType('Bool')
+Unit = FunType('Unit')
