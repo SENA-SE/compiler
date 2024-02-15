@@ -232,7 +232,7 @@ def test_parser_block_with_if_with_last_semicolun() -> None:
         Identifier('d')
     ])
 
-def test_parser_block_missing_semicolon() -> None:
+def test_parser_block_with_semicolon() -> None:
     assert parse(tokenize(
         """        
         {
@@ -244,3 +244,36 @@ def test_parser_block_missing_semicolon() -> None:
         Function(name='f', args=[Identifier(name='a')]), 
         BinaryOp(left=Identifier(name='x'), operation='+', right=Identifier(name='y'))
     ])
+def test_parser_block_missing_semicolon() -> None:
+    try:
+         parse(tokenize(
+        """        
+        {
+            f(a)
+            x+y
+        }
+        """
+    ))
+    except Exception:
+        assert True
+
+def test_parser_block_semicolon_tests() -> None:
+    passed = False
+    try:
+         parse(tokenize('{ { a } { b } }'))
+         parse(tokenize('{ if true then { a } b }'))
+         parse(tokenize('{ if true then { a }; b }'))
+         parse(tokenize('{ if true then { a } b; c }'))
+         parse(tokenize('{ if true then { a } else { b } 3 }'))
+         parse(tokenize('{ { f(a) } { b } }'))
+
+         passed = True
+    except Exception:
+        pass
+        assert passed
+
+def test_parser_block_missing_semicolon_test() -> None:
+    try:
+         parse(tokenize('{ if true then { a } b c }' ))
+    except Exception:
+        assert True

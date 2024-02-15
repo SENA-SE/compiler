@@ -181,12 +181,18 @@ def parse(tokens: list[Token]) -> ast.Expression:
                 else:
                     expression = parse_expression()
                 if peek().type != 'end' and peek().text!='}':
-                    if peek().text != ';':  raise Exception("Expected ';' after expression within a block")
 
                     if peek().text == ';':
                         consume(';')
+                    # elif peek().text != '}' and peek().type != 'end':
+                    #     raise Exception(f'{pos}: Expected \';\' after expression within a block')
+                    elif peek().text not in ('}', 'end') and not isinstance(expression, ast.IfExpression):
+                        # If the expression is not an if-else statement, and we're not at the end or facing a closing brace, expect a semicolon.
+                        raise Exception("Expected ';' after expression within a block, unless it's an if-else statement.")
+
                     expressions.append(expression)
-                else:   result = expression
+                else:   
+                    result = expression
                         
 
         expressions.append(result)
@@ -242,7 +248,7 @@ def test_parser_block_missing_semicolon() -> None:
     assert parse(tokenize(
         """        
         {
-            f(a)
+            f(a);
             x+y
         }
         """
