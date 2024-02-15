@@ -150,7 +150,50 @@ def parse(tokens: list[Token]) -> ast.Expression:
             right = parse_expression()
         return ast.UnaryOp(operation=operation, right=right)
 
+    def parse_block()-> ast.Expression:
+        consume('{')
+        expressions = parse_multiple_expressions()
+        block = ast.Block(expressions)
+        consume('}')
+        return block
+    
+    def parse_multiple_expressions() -> list[ast.Expression]:
+        expressions: list[ast.Expression] = []
+        result: ast.Expression = ast.Literal(None)
 
+        while peek().type != 'end' and peek().text!='}':
+            if peek().text == ';':
+                consume(';')# This handles empty statements (just a semicolon)
+                continue
+            if peek().text == '{':
+                block = parse_block()
+                if peek().text == ';':
+                    consume(';')
+                    expressions.append(block)
+                elif peek().type != 'end' and peek().text!='}':
+                    expressions.append(block)
+                else:
+                    result = block
+                    break
+            else:
+                if peek().text == 'var':
+                    break
+                else:
+                    expression = parse_expression()
+                if peek().type != 'end' and peek().text!='}':
+                    if peek().text != ';':  raise Exception("Expected ';' after expression within a block")
+
+                    if peek().text == ';':
+                        consume(';')
+                    expressions.append(expression)
+                else:   result = expression
+                        
+
+        expressions.append(result)
+        # if peek().text != ';':
+        #     raise Exception("Expected ';' after expression")
+        # consume(';')
+        return expressions
     # This is our main parsing function for this example.
     # To parse "integer + integer" expressions,
     # it uses `parse_int_literal` to parse the first integer,
@@ -159,7 +202,10 @@ def parse(tokens: list[Token]) -> ast.Expression:
     # second integer.
     def parse_expression() -> ast.Expression:
 
-        left = parse_calculation()
+        if peek().text == '{':
+            left = parse_block()
+        else:
+                    left = parse_calculation()
         
         if peek().text == '=':
             consume('=')
@@ -177,18 +223,32 @@ def parse(tokens: list[Token]) -> ast.Expression:
             left = ast.BinaryOp(left=left, operation=operation_token.text, right=right)
         return left
     
+    def parse_all()-> ast.Expression:
+        if peek().type == 'end':
+            raise Exception('No input')
+        expressions = parse_multiple_expressions()
+        if pos!= len(tokens):
+            raise Exception(f'Only {pos} tokens were parsed')
+        
+        if len(expressions) ==1: 
+            return expressions[0]
+        else:   
+            return ast.Block(expressions)
+    
+    return parse_all()
+    # return parse_expression()
 
-    return parse_expression()
+def test_parser_block_missing_semicolon() -> None:
+    assert parse(tokenize(
+        """        
+        {
+            f(a)
+            x+y
+        }
+        """
+    )) == ast.Block([
+        ast.Function(name='f', args=[ast.Identifier(name='a')]), 
+        ast.BinaryOp(left=ast.Identifier(name='x'), operation='+', right=ast.Identifier(name='y'))
+    ])
 
-
-# def test_parser_or() -> None:
-#     assert parse(tokenize('if 1 or 2 then 3')) == ast.IfExpression(
-#         condition=ast.BinaryOp(
-#             left=ast.Literal(1),
-#             operation='and',
-#             right=ast.Literal(2)
-#         ),
-#         then_branch=ast.Literal(3),
-#         else_branch=None
-#     )
-# test_parser_or()
+test_parser_block_missing_semicolon()

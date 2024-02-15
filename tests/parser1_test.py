@@ -1,5 +1,5 @@
 
-from compiler.ast import BinaryOp, IfExpression, Literal, Identifier, Function, UnaryOp
+from compiler.ast import BinaryOp, Block, IfExpression, Literal, Identifier, Function, UnaryOp
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 
@@ -187,3 +187,60 @@ def test_parser_and() -> None:
         then_branch=Literal(1),
         else_branch=None
     )
+
+def test_parser_block() -> None:
+    assert parse(tokenize('{ 1 + 2; }')) == Block([
+        BinaryOp(
+            left=Literal(1),
+            operation='+',
+            right=Literal(2)
+        ),
+        Literal(None)
+    ])
+
+def test_parser_blocks() -> None:
+    assert parse(tokenize('{{ 5 + 4; } { 3 - a }}')) == Block([
+        Block([
+            BinaryOp(
+                left=Literal(5),
+                operation='+',
+                right=Literal(4)
+            ),
+            Literal(None)
+        ]),
+        Block([
+            BinaryOp(
+                left=Literal(3),
+                operation='-',
+                right=Identifier('a')
+            )
+        ])
+    ])
+    
+
+def test_parser_block_with_if_with_last_semicolun() -> None:
+    assert parse(tokenize('{ if a>=b then { a;b; } else { c } d }')) == Block([
+        IfExpression(
+            condition=BinaryOp(
+                left=Identifier('a'),
+                operation='>=',
+                right=Identifier('b')
+            ),
+            then_branch=Block([Identifier('a'), Identifier('b'),Literal(None)]),
+            else_branch=Block([Identifier('c')])
+        ),
+        Identifier('d')
+    ])
+
+def test_parser_block_missing_semicolon() -> None:
+    assert parse(tokenize(
+        """        
+        {
+            f(a);
+            x+y
+        }
+        """
+    )) == Block([
+        Function(name='f', args=[Identifier(name='a')]), 
+        BinaryOp(left=Identifier(name='x'), operation='+', right=Identifier(name='y'))
+    ])

@@ -36,3 +36,10 @@ class UnaryOp(Expression):
     operation: str
     right: Expression
 
+@dataclass
+class Block(Expression):
+    expressions: list[Expression]
+
+    def ends_with_block(self) -> bool:
+        return True
+    
