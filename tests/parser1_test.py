@@ -1,5 +1,5 @@
 
-from compiler.ast import BinaryOp, Block, IfExpression, Literal, Identifier, Function, UnaryOp, VariableDeclaration, WhileExpression
+from compiler.ast import BinaryOp, Block, IfExpression, Int, Literal, Identifier, Function, UnaryOp, VariableDeclaration, WhileExpression
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 
@@ -286,6 +286,16 @@ def test_parser_variable_declaration() -> None:
     assert parse(tokenize('var a = 1')) == VariableDeclaration(
         name='a',
         assignment=Literal(1)
+    )
+def test_parser_variable_declaration_with_type() -> None:
+    assert parse(tokenize('var a:Int = 1+1')) == VariableDeclaration(
+        name='a',
+        assignment=BinaryOp(
+            left=Literal(1),
+            operation='+',
+            right=Literal(1)
+        ),
+        variable_type=Int
     )
 def test_parser_assignment() -> None:
     assert parse(tokenize('a = b + c')) == BinaryOp(

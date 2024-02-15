@@ -23,3 +23,13 @@ def test_type_checker_if_else() -> None:
 
 def test_type_checker_print_int() -> None:
     assert typecheck(parse(tokenize('print_int(1)'))) == Unit
+
+def test_type_checker_variable_declaration() -> None:
+    assert typecheck(parse(tokenize('var x = 1>2'))) == Bool
+    assert typecheck(parse(tokenize('var x: Int = 1 + 1'))) == Int
+
+def test_parser_assign_invalid_type() -> None:
+    try:
+         parse(tokenize('var x: Int = 1>2'))
+    except Exception:
+        assert True

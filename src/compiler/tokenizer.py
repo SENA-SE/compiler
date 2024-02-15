@@ -19,7 +19,7 @@ def tokenize(source_code: str) -> List[Token]:
         ('int_literal', r'\b\d+\b'),
         ('operator', r'==|!=|<=|>=|[+\-*/=><%]'),
         ('parenthesis', r'[(){}]'),
-        ('punctuation', r'[;,]')
+        ('punctuation', r'[;,:]')
     ]
 
     compiled_patterns: List[Tuple[str, Pattern]] = [(name, re.compile(pattern)) for name, pattern in token_patterns]

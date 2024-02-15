@@ -1,10 +1,8 @@
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
-@dataclass
-class Expression:
-    "Base class for expression AST nodes"
+
 @dataclass
 class Type:
     "basic class"
@@ -12,6 +10,15 @@ class Type:
 @dataclass
 class FunType(Type):
     name:str
+
+Int = FunType('Int')
+Bool = FunType('Bool')
+Unit = FunType('Unit')
+
+@dataclass
+class Expression:
+    "Base class for expression AST nodes"
+    type: Type = field(kw_only=True, default_factory=lambda: Unit)
 
 @dataclass
 class Identifier(Expression):
@@ -54,7 +61,7 @@ class Block(Expression):
 class VariableDeclaration(Expression):
     name: str
     assignment: Expression
-    type: Type = None
+    variable_type: Type = None
 
 @dataclass
 class WhileExpression(Expression):
@@ -68,7 +75,3 @@ class SymTab():
 @dataclass
 class HierarchicalSymTab(SymTab):
     parent: SymTab
-
-Int = FunType('Int')
-Bool = FunType('Bool')
-Unit = FunType('Unit')

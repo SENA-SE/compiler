@@ -66,10 +66,18 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             
             return function_type[-1]
         
-        # case ast.VariableDeclaration():
-        #     if node.type is not None:
-                # declared_type = 
-                # assignment_type = typecheck(node.assignment)
+        case ast.VariableDeclaration():
+            assigned_type = typecheck(node.assignment, symbol_table)
+            if node.variable_type is not None:
+                required_type = node.variable_type
+                if required_type != assigned_type:
+                    raise Exception(f'Expected {required_type} but got {assigned_type}')
+                symbol_table.variables[node.name] = required_type
+                return required_type
+            else:
+                symbol_table.variables[node.name] = assigned_type
+                return assigned_type
+
 
         case _:
             raise Exception(f'{node} is not supported')

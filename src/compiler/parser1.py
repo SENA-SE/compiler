@@ -171,15 +171,37 @@ def parse(tokens: list[Token]) -> ast.Expression:
         block = ast.Block(expressions)
         consume('}')
         return block
+    
+    def parse_type_annotation() -> ast.Type:
+        if peek().text == 'Int':
+            consume('Int')
+            return ast.Int
+        elif peek().text == 'Bool':
+            consume('Bool')
+            return ast.Bool
+        elif peek().text == 'Unit':
+            consume('Unit')
+            return ast.Unit
+        else:
+            raise Exception(f'Unsupported type: {peek().text}')
+
     def parse_variable_declaration()-> ast.Expression:
         consume('var')
         if peek().type == 'identifier':
             name = peek().text
             consume()
+
+            type_annotation = None
+            if peek().text == ':':
+                consume(':')
+                type_annotation = parse_type_annotation()
+
             consume('=')
             initializer = parse_expression()
 
-            return ast.VariableDeclaration(name=name, assignment=initializer)
+            
+
+            return ast.VariableDeclaration(name=name, assignment=initializer, variable_type=type_annotation)
         else:
             raise Exception(f'Expected an identifier')
     def parse_multiple_expressions() -> list[ast.Expression]:
