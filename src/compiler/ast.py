@@ -43,3 +43,12 @@ class Block(Expression):
     def ends_with_block(self) -> bool:
         return True
     
+@dataclass
+class VariableDeclaration(Expression):
+    name: str
+    assignment: Expression
+
+@dataclass
+class WhileExpression(Expression):
+    condition: Expression
+    do: Expression

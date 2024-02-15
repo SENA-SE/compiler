@@ -1,5 +1,5 @@
 
-from compiler.ast import BinaryOp, Block, IfExpression, Literal, Identifier, Function, UnaryOp
+from compiler.ast import BinaryOp, Block, IfExpression, Literal, Identifier, Function, UnaryOp, VariableDeclaration, WhileExpression
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 
@@ -277,3 +277,37 @@ def test_parser_block_missing_semicolon_test() -> None:
          parse(tokenize('{ if true then { a } b c }' ))
     except Exception:
         assert True
+
+def test_parser_variable_declaration() -> None:
+    assert parse(tokenize('var a = 1')) == VariableDeclaration(
+        name='a',
+        assignment=Literal(1)
+    )
+def test_parser_assignment() -> None:
+    assert parse(tokenize('a = b + c')) == BinaryOp(
+        left=Identifier('a'),
+        operation='=',
+        right=BinaryOp(
+            left=Identifier('b'),
+            operation='+',
+            right=Identifier('c')
+        )
+    )
+
+def test_parser_boolean() -> None:
+    assert parse(tokenize('if false and true then a')) == IfExpression(
+        condition=BinaryOp(
+            left=Literal(False),
+            operation='and',
+            right=Literal(True)
+        ),
+        then_branch=Identifier('a'),
+        else_branch=None
+    )
+
+def test_parser_while() -> None:
+    assert parse(tokenize('while { a } do {b;}')) == WhileExpression(
+        condition=Block([Identifier('a')]),
+        do=Block([Identifier('b')])
+    )
+    
