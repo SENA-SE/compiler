@@ -20,19 +20,24 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             if node.operation in ['+','-','*','-','%']:
                 if t1 is not Int or t2 is not Int:
                     raise Exception(f'Expected two integer numbers, but got {t1} and {t2}')
+                node.type = Int
                 return Int
             elif node.operation in ['<','<=','>','>=']:
                 if t1 is not Int or t2 is not Int:
                     raise Exception(f'Expected two integer numbers, but got {t1} and {t2}')
+                node.type = Bool
                 return Bool
+
             elif node.operation in ['or','and']:
                 if t1!=Bool or t2!=Bool:
                     raise Exception(f'Expected two boolean values, but got {t1} and {t2}')
                 else:
+                    node.type = Bool
                     return Bool
             elif node.operation in ['==','!=']:
                 if t1!=t2:
                     raise Exception(f'Expected both to be boolean values or integer numbers, but got {t1} and {t2}')
+                node.type = Bool
                 return Bool
             else: 
                 raise Exception(f'{node.operation} is not a supported operation')
@@ -46,12 +51,15 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 t3 = typecheck(node.else_branch)
                 if t2 != t3:
                     raise Exception(f'Expected then and else return the same type, but got {t2} and {t3}')
+                node.type = t2
                 return t2
             else:
+                node.type = Unit
                 return Unit
         
         case ast.Literal():
             if isinstance(node.value, int):
+                node.type = Int
                 return Int
             else:
                 raise Exception(f"{node.value} is not an integer")
@@ -63,7 +71,7 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             for arg_type, required_type in zip(arg_types, function_type[:-1]):
                 if arg_type != required_type:
                     raise Exception(f'Expected type {required_type}, but got {arg_type}')
-            
+            node.type = function_type[-1]
             return function_type[-1]
         
         case ast.VariableDeclaration():
@@ -73,9 +81,11 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 if required_type != assigned_type:
                     raise Exception(f'Expected {required_type} but got {assigned_type}')
                 symbol_table.variables[node.name] = required_type
+                node.type = required_type
                 return required_type
             else:
                 symbol_table.variables[node.name] = assigned_type
+                node.type = assigned_type
                 return assigned_type
 
 
