@@ -14,6 +14,23 @@ SymbolList = {
 
 def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variables=SymbolList)) -> ast.Type:
     match node:
+        case ast.UnaryOp():
+            operand_type = typecheck(node.right, symbol_table)
+            # Assuming unary minus applies to integers
+            if node.operation == '-':
+                if operand_type is not Int:
+                    raise Exception(f'Unary minus expected an integer but got {operand_type}')
+                node.type = Int
+                return Int
+            # handling boolean negation (not operation)
+            elif node.operation == 'not':
+                if operand_type is not Bool:
+                    raise Exception(f'{node}: Expected a boolean but got {operand_type}')
+                node.type = Bool
+                return Bool
+            else:
+                raise Exception(f'Unary operation {node.operation} is not supported')
+            
         case ast.BinaryOp():
             t1 = typecheck(node.left)
             t2 = typecheck(node.right)
@@ -58,9 +75,12 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 return Unit
         
         case ast.Literal():
-            if isinstance(node.value, int):
+            if type(node.value) is int:
                 node.type = Int
                 return Int
+            elif type(node.value) is bool:
+                node.type = Bool
+                return Bool
             else:
                 raise Exception(f"{node.value} is not an integer")
         
@@ -93,6 +113,6 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             raise Exception(f'{node} is not supported')
         
 # def test_type_checker_if_else_unit() -> None:
-#     assert typecheck(parse(tokenize('print_int(1)'))) == Unit
+#     assert typecheck(parse(tokenize('if not true then 1'))) == Unit
 # test_type_checker_if_else_unit()
 

@@ -46,10 +46,10 @@ def parse(tokens: list[Token]) -> ast.Expression:
         token = peek()
         if token.text == 'true':
             consume(token.text)
-            return ast.Literal(True)
+            return ast.Literal(bool(True))
         if token.text == 'false':
             consume(token.text)
-            return ast.Literal(False)
+            return ast.Literal(bool(False))
         if peek().type != 'identifier':
             raise Exception(f' expected an identifier')
         else:
@@ -293,7 +293,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
 
 # def test_parser_parse_variable_declaration() -> None:
-#     assert parse(tokenize('var a = b')) == ast.VariableDeclaration(
+#     assert parse(tokenize('if not true then 1')) == ast.VariableDeclaration(
 #         name='a',
 #         initializer=ast.Identifier('b')
 #     )

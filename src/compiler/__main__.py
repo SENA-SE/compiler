@@ -1,4 +1,5 @@
 import sys
+from compiler import ast
 from compiler.ir_generator import generate_ir
 from compiler.parser1 import parse
 
@@ -62,3 +63,4 @@ def main() -> int:
 
 if __name__ == '__main__':
     sys.exit(main())
+

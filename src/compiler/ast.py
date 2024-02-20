@@ -26,7 +26,7 @@ class Identifier(Expression):
 
 @dataclass
 class Literal(Expression):
-    value: int
+    value: int | bool
 
 @dataclass
 class BinaryOp(Expression):
