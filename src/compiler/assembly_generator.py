@@ -11,24 +11,24 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
     emit('.global main')
     emit('.type main, @function')
     emit('.extern print_int')
-
+    
     emit('.section .text')
     emit('main:')
     emit('pushq %rbp')
-    emit('moveq %rsp, %rbp')
+    emit('movq %rsp, %rbp')
     emit(f'subq ${locals.stack_used()}, %rsp')
 
     for insn in instructions:
-        emit('#'+str(insn))
+        emit('# ' + str(insn))
         match insn:
             case ir.Label():
                 emit(f'.L{insn.name}:')
             case ir.LoadIntConst():
-                emit(f'moveq ${insn.value}, {locals.get_ref(insn.dest)}')
+                emit(f'movq ${insn.value}, {locals.get_ref(insn.dest)}')
                 #TODO: doesn't work if insn.value is too large or too small
             case ir.Copy():
-                emit(f'moveq {locals.get_ref(insn.source)}, %rax')
-                emit(f'moveq %rax, {locals.get_ref(insn.dest)}')
+                emit(f'movq {locals.get_ref(insn.source)}, %rax')
+                emit(f'movq %rax, {locals.get_ref(insn.dest)}')
             case ir.Call():
                 if (intrinsic := all_intrinsics.get(insn.fun.name)) is not None:
                     args = IntrinsicArgs(
@@ -47,8 +47,8 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
             case _:
                 raise Exception(f'Unknow instruction:{type(insn)}')
 
-    emit('move $0, %rax')
-    emit('moveq %rbq, %rsp')
+    emit('movq $0, %rax')
+    emit('movq %rbp, %rsp')
     emit('popq %rbp')
     emit('ret')
     emit('')

@@ -6,14 +6,14 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
     next_label_num = 1
     def new_var() -> IRVar:
         nonlocal next_var_num
-        print(next_var_num)
+        # print(next_var_num)
         var = IRVar(f'x{next_var_num}')
         next_var_num+=1
         return var
     
     def new_label() -> Label:
         nonlocal next_label_num
-        print(next_label_num)
+        # print(next_label_num)
         label = Label(f'L{next_label_num}')
         next_label_num+=1
         return label
