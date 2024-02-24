@@ -1,5 +1,7 @@
 import sys
 from compiler import ast
+from compiler.assembler import assemble
+from compiler.assembly_generator import generate_assembly
 from compiler.ir_generator import generate_ir
 from compiler.parser1 import parse
 
@@ -55,6 +57,22 @@ def main() -> int:
         typecheck(ast_node)
         ir_instructions = generate_ir(ast_node)
         print("\n".join([str(ins) for ins in ir_instructions]))
+    elif command == 'asm':
+        source_code = read_source_code()
+        tokens = tokenize(source_code)
+        ast_node = parse(tokens)
+        typecheck(ast_node)
+        ir_instructions = generate_ir(ast_node)
+        asm_code = generate_assembly(ir_instructions)
+        print(asm_code)
+    elif command == 'compiled':
+        source_code = read_source_code()
+        tokens = tokenize(source_code)
+        ast_node = parse(tokens)
+        typecheck(ast_node)
+        ir_instructions = generate_ir(ast_node)
+        asm_code = generate_assembly(ir_instructions)
+        assemble(asm_code, 'compiled_program')
     else:
         print(f"Error: unknown command: {command}\n\n{usage}", file=sys.stderr)
         return 1
