@@ -43,7 +43,14 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
                      assert len(insn.args) == 1 # todo: support more args
                      emit(f'movq {locals.get_ref(insn.args[0])}, %rdi')
                      emit('call print_int')
+            case ir.Jump():
+                emit(f'jmp .L{insn.label.name}')
 
+            case ir.CondJump():
+                emit(f'cmpq $0, {locals.get_ref(insn.condition)}')
+                emit(f'jne .L{insn.then_label.name}')
+                emit(f'jmp .L{insn.else_label.name}')
+            
             case _:
                 raise Exception(f'Unknow instruction:{type(insn)}')
 

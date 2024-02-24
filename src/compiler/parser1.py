@@ -21,7 +21,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
     # If the optional parameter 'expected' is given, it checks that the token being consumed has that text.
     # If 'expected' is a list, then the token must have one of the texts in the list.
     def consume(expected: str | list[str] | None = None) -> Token:
-        print(f'expected {expected}')
+        # print(f'expected {expected}')
         nonlocal pos
         token = peek()
         if isinstance(expected, str) and token.text != expected:
@@ -30,7 +30,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             comma_separated = ", ".join([f'"{e}"' for e in expected])
             raise Exception(f' expected one of: {comma_separated}')
         pos += 1
-        print(f'consumed {token}')
+        # print(f'consumed {token}')
         return token
 
     # This is the parsing function for integer literals.
