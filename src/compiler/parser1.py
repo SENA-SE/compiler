@@ -379,10 +379,10 @@ def parse(tokens: list[Token]) -> ast.Expression:
     # return parse_expression()
 
 
-# def test_parser_parse_variable_declaration() -> None:
-#     assert parse(tokenize('var a=1; {a=a+2;} return a')) == ast.VariableDeclaration(
-#         name='a',
-#         initializer=ast.Identifier('b')
-#     )
-# test_parser_parse_variable_declaration()
+def test_parser_parse_variable_declaration() -> None:
+    assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == ast.VariableDeclaration(
+        name='a',
+        initializer=ast.Identifier('b')
+    )
+test_parser_parse_variable_declaration()
 

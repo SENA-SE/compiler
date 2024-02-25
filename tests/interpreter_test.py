@@ -86,3 +86,7 @@ def test_continue_in_loop():
     """
     # y should be 4 because the increment of y is skipped when x is 3
     assert interpret(parse(tokenize(program))) == 4
+
+def test_interpreter_return() -> None:
+        assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} return a+1'))) == 2
+
