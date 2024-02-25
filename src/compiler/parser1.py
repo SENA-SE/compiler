@@ -108,6 +108,12 @@ def parse(tokens: list[Token]) -> ast.Expression:
             return parse_break()
         elif peek().text == 'continue':
             return parse_continue()
+        elif peek().text == 'return':
+            return parse_return()
+        elif peek().text =='&':
+            return parse_address()
+        elif peek().text =='*':
+            return parse_dereference()
         elif peek().type == 'int_literal':
             return parse_int_literal()
         elif peek().type == 'identifier':
@@ -187,6 +193,22 @@ def parse(tokens: list[Token]) -> ast.Expression:
     def parse_continue() -> ast.Expression:
         consume('continue')
         return ast.Continue()
+    
+    def parse_return() -> ast.Return:
+        consume('return')
+        value = parse_expression()  
+        return ast.Return(value=value)
+
+    
+    def parse_address() -> ast.Expression:
+        consume('&')
+        operand = parse_expression()
+        return ast.AddressOf(operand=operand)
+    
+    def parse_dereference() -> ast.Expression:
+        consume('*')
+        operand = parse_expression()
+        return ast.Dereference(operand=operand)
 
     def parse_block()-> ast.Expression:
         consume('{')
@@ -198,15 +220,23 @@ def parse(tokens: list[Token]) -> ast.Expression:
     def parse_type_annotation() -> ast.Type:
         if peek().text == 'Int':
             consume('Int')
-            return ast.Int
+            base_type =  ast.Int
         elif peek().text == 'Bool':
             consume('Bool')
-            return ast.Bool
+            base_type =  ast.Bool
         elif peek().text == 'Unit':
             consume('Unit')
-            return ast.Unit
+            base_type =  ast.Unit
         else:
             raise Exception(f'Unsupported type: {peek().text}')
+
+        if peek().text == '*':
+            consume('*')
+            return ast.PointerType(base_type=base_type)  
+
+        return base_type
+        
+
 
     def parse_variable_declaration()-> ast.Expression:
         consume('var')
@@ -350,8 +380,9 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
 
 # def test_parser_parse_variable_declaration() -> None:
-#     assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == ast.VariableDeclaration(
+#     assert parse(tokenize('var a=1; {a=a+2;} return a')) == ast.VariableDeclaration(
 #         name='a',
 #         initializer=ast.Identifier('b')
 #     )
 # test_parser_parse_variable_declaration()
+

@@ -154,6 +154,10 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 except BreakException:
                     break
             return None
+        
+        case ast.Return():
+            return symbol_table.variables[node.value.name]
+
 
 
         case _:
@@ -161,9 +165,9 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             
 
-# def test_interpreter_variable_context() -> None:
-#         assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} a'))) == 1
-# test_interpreter_variable_context()
+def test_interpreter_variable_context() -> None:
+        assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} return a'))) == 1
+test_interpreter_variable_context()
         
 
 

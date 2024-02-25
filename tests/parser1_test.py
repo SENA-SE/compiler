@@ -1,5 +1,5 @@
 
-from compiler.ast import BinaryOp, Block, IfExpression, Int, Literal, Identifier, Function, UnaryOp, VariableDeclaration, WhileExpression
+from compiler.ast import AddressOf, BinaryOp, Block, Dereference, IfExpression, Int, Literal, Identifier, Function, PointerType, UnaryOp, VariableDeclaration, WhileExpression
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 
@@ -324,4 +324,29 @@ def test_parser_while() -> None:
         condition=Block([Identifier('a')]),
         do=Block([Identifier('b')])
     )
+    
+
+# def test_parser_pointer_type_annotation():
+#     source_code = "var x: Int* = &y"
+#     tokens = tokenize(source_code)
+#     parsed_expression = parse(tokens)
+
+#     # Assert that the parsed AST matches the expected AST
+#     assert parsed_expression == VariableDeclaration(
+#         name="x",
+#         variable_type=PointerType(base_type=Int),
+#         assignment=AddressOf(operand=Identifier(name="y"))
+#     )
+
+# def test_parser_pointer_dereference():
+#     # Test parsing of a dereference operation
+#     source_code = "*p"
+#     tokens = tokenize(source_code)
+#     parsed_expression = parse(tokens)
+
+#     # Construct the expected AST
+#     expected_ast = Dereference(operand=Identifier(name="p"))
+
+#     # Assert that the parsed AST matches the expected AST
+#     assert parsed_expression == expected_ast, "Failed to parse pointer dereference operation correctly"
     

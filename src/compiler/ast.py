@@ -91,6 +91,21 @@ class Break(Expression):
 class Continue(Expression):
     "continue"
 
+@dataclass
+class Return(Expression):
+    value: Expression
+
+@dataclass
+class PointerType(Type):
+    base_type: Type
+@dataclass
+class AddressOf(Expression):
+    operand: Expression
+
+@dataclass
+class Dereference(Expression):
+    operand: Expression
+
 # @dataclass
 # class FunctionDefinition(Expression):
 #     name: str

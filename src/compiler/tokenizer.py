@@ -17,7 +17,7 @@ def tokenize(source_code: str) -> List[Token]:
         ('keyword', r'\b(if|then|else|break|continue)\b'), 
         ('identifier', r'[a-zA-Z_][a-zA-Z0-9_]*'),
         ('int_literal', r'\b\d+\b'),
-        ('operator', r'==|!=|<=|>=|\+=|\-=|[+\-*/=><%]'),
+        ('operator', r'==|!=|<=|>=|\+=|\-=|[+\-*/=><%&]'),
         ('parenthesis', r'[(){}]'),
         ('punctuation', r'[;,:]')
     ]
