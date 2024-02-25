@@ -82,6 +82,15 @@ class SymTab():
 class HierarchicalSymTab(SymTab):
     parent: SymTab
 
+@dataclass
+class Break(Expression):
+    "break"
+    test: str=None
+
+@dataclass
+class Continue(Expression):
+    "continue"
+
 # @dataclass
 # class FunctionDefinition(Expression):
 #     name: str

@@ -60,3 +60,29 @@ def test_interpreter_infinite_loop() -> None:
         interpret(parse(tokenize('while a < 2 do a += 1; a'))) == 1
     except Exception:
         assert True
+
+def test_break_in_loop():
+    program = """
+    var x = 0;
+    while (x < 10) do{
+        x = x + 1;
+        if (x == 5) then break;
+    }
+    x
+    """
+    # x should be 5 because the loop breaks when x reaches 5
+    assert interpret(parse(tokenize(program))) == 5
+
+def test_continue_in_loop():
+    program = """
+    var x = 0;
+    var y = 0;
+    while (x < 5) do{
+        x = x + 1;
+        if (x == 3) then continue;
+        y = y + 1;
+    }
+    y
+    """
+    # y should be 4 because the increment of y is skipped when x is 3
+    assert interpret(parse(tokenize(program))) == 4

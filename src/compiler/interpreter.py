@@ -42,9 +42,18 @@ def and_operation(a,b,symbol_table:ast.SymTab)-> bool:
     
     return False
 
+class BreakException(Exception):
+    pass
+
+class ContinueException(Exception):
+    pass
 
 def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variables=SymbolList)) -> Value:
     match node:
+        case ast.Break():
+            raise BreakException
+        case ast.Continue():
+            raise ContinueException
 
         
         case ast.BinaryOp():
@@ -138,7 +147,12 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             while interpret(condition, symbol_table) == True:
                 if counter > 500 : raise Exception('loop is stopped manually')
                 counter+=1
-                interpret(node.do, symbol_table)
+                try:
+                    interpret(node.do, symbol_table)
+                except ContinueException:
+                    continue
+                except BreakException:
+                    break
             return None
 
 
@@ -147,6 +161,10 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             
 
-def test_interpreter_variable_context() -> None:
-        assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} a'))) == 1
-test_interpreter_variable_context()
+# def test_interpreter_variable_context() -> None:
+#         assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} a'))) == 1
+# test_interpreter_variable_context()
+        
+
+
+

@@ -104,6 +104,10 @@ def parse(tokens: list[Token]) -> ast.Expression:
             return parse_while()
         elif peek().text in ['not', '-']:
             return parse_unary()
+        elif peek().text =='break':
+            return parse_break()
+        elif peek().text == 'continue':
+            return parse_continue()
         elif peek().type == 'int_literal':
             return parse_int_literal()
         elif peek().type == 'identifier':
@@ -175,6 +179,14 @@ def parse(tokens: list[Token]) -> ast.Expression:
         else:
             right = parse_expression()
         return ast.UnaryOp(operation=operation, right=right)
+    
+    def parse_break() -> ast.Expression:
+        consume('break')
+        return ast.Break()
+    
+    def parse_continue() -> ast.Expression:
+        consume('continue')
+        return ast.Continue()
 
     def parse_block()-> ast.Expression:
         consume('{')

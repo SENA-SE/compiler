@@ -14,7 +14,7 @@ def tokenize(source_code: str) -> List[Token]:
         ('whitespace', r'\s+'),
         ('single_line_comment', r'\/\/[^\n]*|#.*'),
         ('multi_line_comment', r'\/\*[\s\S]*?\*\/'),
-        ('keyword', r'\b(if|then|else)\b'), 
+        ('keyword', r'\b(if|then|else|break|continue)\b'), 
         ('identifier', r'[a-zA-Z_][a-zA-Z0-9_]*'),
         ('int_literal', r'\b\d+\b'),
         ('operator', r'==|!=|<=|>=|\+=|\-=|[+\-*/=><%]'),
