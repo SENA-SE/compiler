@@ -48,7 +48,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
         
         case ast.BinaryOp():
-            if isinstance(node.left, ast.Identifier) and node.operation == '=':
+            if isinstance(node.left, ast.Identifier) and node.operation in ['=']:
                 if isinstance(symbol_table.variables, dict) and node.left.name in symbol_table.variables:
                     symbol_table.variables[node.left.name] = interpret(node.right, symbol_table)
                     return None
@@ -66,6 +66,16 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 if node.operation in ['or','and']:
                     operation_function = top_symbol_table.variables[node.operation]
                     return operation_function(node.left, node.right, symbol_table)
+                # elif node.operation in ['+=','-=']:
+                #     # operation_function = top_symbol_table.variables[node.operation]
+                #     # symbol_table.variables[node.left.name] = operation_function(a,b)
+                #     # Ensure 'a' is the current value of the variable
+                #     current_value = symbol_table.variables.get(node.left.name, 0)
+                #     operation_function = top_symbol_table.variables[node.operation]
+                #     # Calculate new value and update directly in the symbol table
+                #     new_value = operation_function(current_value, b)
+                #     symbol_table.variables[node.left.name] = new_value
+                #     return None
                 else:
                     operation_function = top_symbol_table.variables[node.operation]
                     return operation_function(a,b)
@@ -112,8 +122,8 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             variables = ast.HierarchicalSymTab({}, symbol_table)
             for i in range(0, len(node.expressions)-1):
                 interpret(node.expressions[i], variables)
-
-            return interpret(node.expressions[len(node.expressions)-1], variables)
+            y=interpret(node.expressions[len(node.expressions)-1], variables)
+            return y
         
         case ast.WhileExpression():
             condition = node.condition
@@ -132,5 +142,6 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             
 # def test_parser_parse_variable_declaration() -> None:
-#     assert interpret(parse(tokenize('var a = -1; while a<2 do a=a+1; a'))) == 2
+#     # assert interpret(parse(tokenize('var a = -1; while a<2 do a=a+1; a'))) == 2
+#     assert interpret(parse(tokenize('var a = -1; while a<2 do a+=1; a'))) == 2
 # test_parser_parse_variable_declaration()
