@@ -116,6 +116,11 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
 
         case ast.VariableDeclaration():
+            # top_symbol_table = symbol_table
+            # while isinstance(top_symbol_table, ast.HierarchicalSymTab):
+            #     top_symbol_table = top_symbol_table.parent
+            if symbol_table.variables.get(node.name) is not None:
+                    raise Exception(f"The variable {node.name} has already been declared")
             symbol_table.variables[node.name] = interpret(node.assignment, symbol_table)
 
         case ast.Block():
@@ -141,7 +146,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             raise Exception(f'{node} is not supported')
 
             
-# def test_parser_parse_variable_declaration() -> None:
-#     # assert interpret(parse(tokenize('var a = -1; while a<2 do a=a+1; a'))) == 2
-#     assert interpret(parse(tokenize('var a = -1; while a<2 do a+=1; a'))) == 2
-# test_parser_parse_variable_declaration()
+
+def test_interpreter_variable_context() -> None:
+        assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} a'))) == 1
+test_interpreter_variable_context()

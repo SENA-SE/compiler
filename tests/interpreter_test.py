@@ -30,6 +30,20 @@ def test_interpreter_variable_in_scope() -> None:
     except Exception:
         assert True
 
+def test_interpreter_variable_operation_in_scope() -> None:
+        assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} a'))) == 1
+
+
+def test_interpreter_variable_context() -> None:
+        assert interpret(parse(tokenize('var a=1; {a=2; a=a+1;} a'))) == 3
+
+def test_interpreter_double_declaration() -> None:
+    try:
+        interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} a'))) == 3
+    except Exception:
+        assert True
+
+
 def test_intepreter_and_or_operations() -> None:
     assert interpret(parse(tokenize('1==1 and 1<2 '))) == True
     assert interpret(parse(tokenize('1==1 or 1<2 '))) == True
