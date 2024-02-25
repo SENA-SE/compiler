@@ -156,7 +156,11 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             return None
         
         case ast.Return():
-            return symbol_table.variables[node.value.name]
+            name = getattr(node.value, 'name', None)
+            if symbol_table.variables.get(name) is not None:
+                return symbol_table.variables[name]
+            else:
+                return interpret(node.value, symbol_table)
 
 
 
@@ -166,7 +170,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             
 
 def test_interpreter_variable_context() -> None:
-        assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} return a'))) == 1
+        assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} return a+1'))) == 2
 test_interpreter_variable_context()
         
 
