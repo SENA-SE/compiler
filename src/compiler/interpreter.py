@@ -14,25 +14,61 @@ SymbolList = {
     '>': lambda x, y: x > y,
     '>=': lambda x, y: x >= y,
     '==': lambda x, y: x == y,
-    'or': lambda x, y: True if x else y,
-    'and': lambda x, y: False if not x else x and y,
+    '!=': lambda x, y: x != y,
+    '+=': lambda x, y: x + y,
+    '-=': lambda x, y: x - y,
+    'or': lambda x, y, st: or_operation(x,y,st),
+    'and': lambda x, y,st: and_operation(x,y,st),
 
 
     'unary': lambda x: not x if isinstance(x, bool) else -x,
 }
+
+def or_operation(a,b,symbol_table:ast.SymTab) -> bool:
+    if interpret(a, symbol_table) == False:
+        if isinstance(interpret(b, symbol_table), bool):    
+            return interpret(b, symbol_table)
+    else:
+        return True
+    
+    return False
+
+def and_operation(a,b,symbol_table:ast.SymTab)-> bool:
+    if interpret(a, symbol_table) == True:
+        if isinstance(interpret(b, symbol_table), bool):    
+            return interpret(b, symbol_table)
+    else:
+        return False
+    
+    return False
+
+
 def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variables=SymbolList)) -> Value:
     match node:
 
         
         case ast.BinaryOp():
+            if isinstance(node.left, ast.Identifier) and node.operation == '=':
+                if isinstance(symbol_table.variables, dict) and node.left.name in symbol_table.variables:
+                    symbol_table.variables[node.left.name] = interpret(node.right, symbol_table)
+                    return None
+                elif isinstance(symbol_table, ast.HierarchicalSymTab):
+                    return interpret(node, symbol_table.parent)
+                else:   raise Exception
+
             a: Any = interpret(node.left, symbol_table)
             b: Any = interpret(node.right, symbol_table)
             top_symbol_table = symbol_table
+
             while isinstance(top_symbol_table, ast.HierarchicalSymTab):
                 top_symbol_table = top_symbol_table.parent
             if node.operation in top_symbol_table.variables:
-                operation_function = top_symbol_table.variables[node.operation]
-                return operation_function(a,b)
+                if node.operation in ['or','and']:
+                    operation_function = top_symbol_table.variables[node.operation]
+                    return operation_function(node.left, node.right, symbol_table)
+                else:
+                    operation_function = top_symbol_table.variables[node.operation]
+                    return operation_function(a,b)
             else:
                 raise Exception(f'operation {node.operation} does not exist')
 
@@ -50,7 +86,8 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             return node.value
         
         case ast.Identifier():
-            if node.name in symbol_table.variables: return symbol_table.variables[node.name]
+            if node.name in symbol_table.variables: 
+                return symbol_table.variables[node.name]
             elif isinstance(symbol_table, ast.HierarchicalSymTab):
                 return interpret(node, symbol_table.parent)
             else:
@@ -77,8 +114,23 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 interpret(node.expressions[i], variables)
 
             return interpret(node.expressions[len(node.expressions)-1], variables)
+        
+        case ast.WhileExpression():
+            condition = node.condition
+            counter = 0
+            if condition == True:
+                raise Exception('infinited loop')
+            while interpret(condition, symbol_table) == True:
+                if counter > 500 : raise Exception('loop is stopped manually')
+                counter+=1
+                interpret(node.do, symbol_table)
+            return None
+
 
         case _:
             raise Exception(f'{node} is not supported')
 
             
+# def test_parser_parse_variable_declaration() -> None:
+#     assert interpret(parse(tokenize('var a = -1; while a<2 do a=a+1; a'))) == 2
+# test_parser_parse_variable_declaration()

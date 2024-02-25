@@ -40,10 +40,9 @@ class IfExpression(Expression):
     then_branch: Expression
     else_branch: Expression = None  
 
-@dataclass
-class Function(Expression):
-    name: str
-    args: list[Expression]
+
+
+
 
 @dataclass
 class UnaryOp(Expression):
@@ -60,8 +59,15 @@ class Block(Expression):
 @dataclass
 class VariableDeclaration(Expression):
     name: str
-    assignment: Expression
+    assignment: Expression = None
     variable_type: Type = None
+
+@dataclass
+class Function(Expression):
+    name: str
+    args: list[VariableDeclaration]
+    return_type: Type = None
+    body: Block = None
 
 @dataclass
 class WhileExpression(Expression):
@@ -75,3 +81,15 @@ class SymTab():
 @dataclass
 class HierarchicalSymTab(SymTab):
     parent: SymTab
+
+# @dataclass
+# class FunctionDefinition(Expression):
+#     name: str
+#     params: list[VariableDeclaration]
+#     return_type: Type
+#     body: Expression
+
+# @dataclass
+# class Module:
+#     functions: list[FunctionDefinition]
+#     expressions: list[Expression]  # Top-level expressions

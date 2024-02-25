@@ -30,7 +30,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             comma_separated = ", ".join([f'"{e}"' for e in expected])
             raise Exception(f' expected one of: {comma_separated}')
         pos += 1
-        # print(f'consumed {token}')
+        print(f'consumed {token}')
         return token
 
     # This is the parsing function for integer literals.
@@ -42,7 +42,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
         token = consume()
         return ast.Literal(int(token.text))
 
-    def parse_identifier() -> ast.Identifier| ast.Literal| ast.Function:
+    def parse_identifier() -> ast.Identifier| ast.Literal| ast.Function | ast.VariableDeclaration:
         token = peek()
         if token.text == 'true':
             consume(token.text)
@@ -61,6 +61,10 @@ def parse(tokens: list[Token]) -> ast.Expression:
                 args = parse_arguments()
                 consume(')')
                 return ast.Function(name=token.text, args=args)
+            elif next_token.text == ':':
+                consume(':')
+                arg_type = parse_type_annotation()
+                return ast.VariableDeclaration(name=token.text, type=arg_type)
             else:   # no an if expression
                 return ast.Identifier(token.text)
     
@@ -91,7 +95,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
     # "an identifier or an integer literal"
     # is called a "term".
     def parse_factor() -> ast.Expression:
-        # print(peek().text,peek().type)
+        print(peek().text,peek().type)
         if peek().text == '(':
             return parse_parenthesized()
         elif peek().text == 'if':
@@ -113,7 +117,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
         # Recursively call the top level parsing function
         # to parse whatever is inside the parentheses.
         expr = parse_expression()
-        consume(')')
+        if peek().text == ')': consume(')')
         return expr  
     
     def parse_if() -> ast.Expression:
@@ -132,8 +136,15 @@ def parse(tokens: list[Token]) -> ast.Expression:
         consume('while')
         condition = parse_expression()
         consume('do')
-        body = parse_expression()
-        return ast.WhileExpression(condition=condition,do=body)
+        do = parse_expression()
+
+        if isinstance(do, ast.Block):
+            return ast.WhileExpression(condition=condition, do=do)
+        elif peek().text == ';':
+            consume(';')
+            return ast.WhileExpression(condition=condition, do=ast.Block([do, ast.Literal(None)]))
+        return ast.WhileExpression(condition=condition, do=do)
+
     
     def parse_calculation() -> ast.Expression:
         # Parse the first term.
@@ -204,6 +215,38 @@ def parse(tokens: list[Token]) -> ast.Expression:
             return ast.VariableDeclaration(name=name, assignment=initializer, variable_type=type_annotation)
         else:
             raise Exception(f'Expected an identifier')
+    
+    def parse_function_definition() -> ast.Function:
+        consume('fun')
+        if peek().type == 'identifier':
+
+            name = peek().text
+            consume()
+            params = parse_arguments()
+            if peek().text == ')': consume(')')
+
+            return_type = None
+            if peek().text == ':':
+                consume(':')
+                return_type = parse_type_annotation()
+            if peek().text == '{':
+                body = parse_block()
+            
+            return ast.Function(name=name, params=params, return_type=return_type, body=body)
+        else:
+            raise Exception(f'Expected an identifier')
+
+    # def parse_module(tokens: List[Token]) -> ast.Module:
+    #     functions = []
+    #     expressions = []
+    #     while not all tokens are consumed:
+    #         if next tokens indicate a function definition:
+    #             functions.append(parse_function_definition())
+    #         else:
+    #             expressions.append(parse_expression())
+    #     return ast.Module(functions=functions, expressions=expressions)
+
+
     def parse_multiple_expressions() -> list[ast.Expression]:
         expressions: list[ast.Expression] = []
         result: ast.Expression = ast.Literal(None)
@@ -225,6 +268,8 @@ def parse(tokens: list[Token]) -> ast.Expression:
             else:
                 if peek().text == 'var':
                     expression = parse_variable_declaration()
+                elif peek().text == 'fun':
+                    expression = parse_function_definition()
                 else:
                     expression = parse_expression()
                 if peek().type != 'end' and peek().text!='}':
@@ -233,7 +278,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
                         consume(';')
                     # elif peek().text != '}' and peek().type != 'end':
                     #     raise Exception(f'{pos}: Expected \';\' after expression within a block')
-                    elif peek().text not in ('}', 'end') and not isinstance(expression, ast.IfExpression):
+                    elif peek().text not in ('}', 'end') and not isinstance(expression, ast.IfExpression | ast.WhileExpression):
                         # If the expression is not an if-else statement, and we're not at the end or facing a closing brace, expect a semicolon.
                         raise Exception("Expected ';' after expression within a block, unless it's an if-else statement.")
 
@@ -266,7 +311,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             right = parse_expression()
             return ast.BinaryOp(left=left, operation=operation, right=right)
         
-        while peek().text in ['==', '!=', '<','<=', '>', '>=','%']:
+        while peek().text in ['==', '!=', '<','<=', '>', '>=','%','+=','-=']:
             operation_token = consume()
             right = parse_calculation()
             left = ast.BinaryOp(left=left, operation=operation_token.text, right=right)
@@ -293,7 +338,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
 
 # def test_parser_parse_variable_declaration() -> None:
-#     assert parse(tokenize('if not true then 1')) == ast.VariableDeclaration(
+#     assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == ast.VariableDeclaration(
 #         name='a',
 #         initializer=ast.Identifier('b')
 #     )
