@@ -1,5 +1,6 @@
 
-from compiler.ast import AddressOf, BinaryOp, Block, Dereference, IfExpression, Int, Literal, Identifier, Function, PointerType, UnaryOp, VariableDeclaration, WhileExpression
+
+from compiler.ast import AddressOf, BinaryOp, Block, Dereference, IfExpression, Int, Literal, Identifier, Function, PointerType, UnaryOp, VariableDeclaration, WhileExpression, Return
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 
@@ -350,3 +351,27 @@ def test_parser_while() -> None:
 #     # Assert that the parsed AST matches the expected AST
 #     assert parsed_expression == expected_ast, "Failed to parse pointer dereference operation correctly"
     
+
+def test_parser_parse_variable_declaration() -> None:
+    assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == Function(
+        name='square',
+        args=[VariableDeclaration(
+            name='x',
+            variable_type=Int
+            ),
+        VariableDeclaration(
+            name='y',
+            variable_type=Int
+            )
+        ],
+        return_type=Int,
+        body=Block([
+        Return(value=BinaryOp(
+            left=Identifier(name='x'),
+            operation='*',
+            right=Identifier(name='x')
+        ))
+    ])
+
+    )
+

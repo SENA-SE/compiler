@@ -64,7 +64,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             elif next_token.text == ':':
                 consume(':')
                 arg_type = parse_type_annotation()
-                return ast.VariableDeclaration(name=token.text, type=arg_type)
+                return ast.VariableDeclaration(name=token.text, variable_type=arg_type)
             else:   # no an if expression
                 return ast.Identifier(token.text)
     
@@ -274,7 +274,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             if peek().text == '{':
                 body = parse_block()
             
-            return ast.Function(name=name, params=params, return_type=return_type, body=body)
+            return ast.Function(name=name, args=params, return_type=return_type, body=body)
         else:
             raise Exception(f'Expected an identifier')
 
@@ -379,10 +379,27 @@ def parse(tokens: list[Token]) -> ast.Expression:
     # return parse_expression()
 
 
-def test_parser_parse_variable_declaration() -> None:
-    assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == ast.VariableDeclaration(
-        name='a',
-        initializer=ast.Identifier('b')
-    )
-test_parser_parse_variable_declaration()
+# def test_parser_parse_variable_declaration() -> None:
+#     assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == ast.Function(
+#         name='square',
+#         args=[ast.VariableDeclaration(
+#             name='x',
+#             variable_type=ast.Int
+#             ),
+#         ast.VariableDeclaration(
+#             name='y',
+#             variable_type=ast.Int
+#             )
+#         ],
+#         return_type=ast.Int,
+#         body=ast.Block([
+#         ast.Return(value=ast.BinaryOp(
+#             left=ast.Identifier(name='x'),
+#             operation='*',
+#             right=ast.Identifier(name='x')
+#         ))
+#     ])
+
+#     )
+# test_parser_parse_variable_declaration()
 
