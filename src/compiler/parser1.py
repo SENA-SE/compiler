@@ -320,7 +320,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
                         consume(';')
                     # elif peek().text != '}' and peek().type != 'end':
                     #     raise Exception(f'{pos}: Expected \';\' after expression within a block')
-                    elif peek().text not in ('}', 'end') and not isinstance(expression, ast.IfExpression | ast.WhileExpression):
+                    elif peek().text not in ('}', 'end') and not isinstance(expression, ast.IfExpression | ast.WhileExpression | ast.Function):
                         # If the expression is not an if-else statement, and we're not at the end or facing a closing brace, expect a semicolon.
                         #TODO: no semicolon is allowed after function definition
                         raise Exception("Expected ';' after expression within a block, unless it's an if-else statement.")

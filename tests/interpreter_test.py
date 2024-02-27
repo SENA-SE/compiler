@@ -52,8 +52,6 @@ def test_intepreter_and_or_operations() -> None:
 
 def test_interpreter_while_expression() -> None:
     assert interpret(parse(tokenize('var a = -1; while a<2 do a=a+1; a'))) == 2
-    # assert interpret(parse(tokenize('var a = -1; while a < 2 do a += 1; a'))) == 1
-    # assert interpret(parse(tokenize('var a = -1; while a < 2 do {a += 1; a}'))) == None
 
 def test_interpreter_infinite_loop() -> None:
     try:
@@ -89,4 +87,7 @@ def test_continue_in_loop():
 
 def test_interpreter_return() -> None:
         assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} return a+1'))) == 2
+
+def test_interpreter_function_invoke() -> None:
+        assert interpret(parse(tokenize('fun square(x:Int, y:Int):Int{return x*y};  return square(3,4)'))) == 12
 
