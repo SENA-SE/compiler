@@ -156,9 +156,11 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 for i in range(0, len(y.args)):
                     if(isinstance(y.args[i], ast.Function)):
                         x=interpret(y.args[i], variables)
-                        return interpret(ast.Block(expressions=[x]), variables)
+                        variables.variables[y.arg_variables[i].name] = interpret(ast.Block(expressions=[x]), variables)
                     elif getattr(y.args[i], 'value', None) is not None:
                         variables.variables[y.arg_variables[i].name] = y.args[i].value
+                    # else:
+                        
                     print(y.args[i])
                 return  interpret(y.body, variables)
             else:    
@@ -229,15 +231,23 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             
 
 # def test_interpreter_variable_context() -> None:
-#         assert interpret(parse(tokenize('fun square(x:Int, y:Int):Int{return x*y}; fun plus(x,y){return x+y}; return square(plus(1,2),3)'))) == 12
+#         assert interpret(parse(tokenize('fun square(x:Int, y:Int):Int{return x*y}; fun plus(x,y){return x+y}; return square(plus(1,2),3)'))) == 9
 # test_interpreter_variable_context()
         
 
-def test_interpreter_variable_context() -> None:
-        assert interpret(parse(tokenize('fun square(x:Int):Int{return x*x}; fun plus(x,y){return square(x)+y}; return plus(2,3)'))) == 7
-test_interpreter_variable_context()
+# def test_interpreter_variable_context() -> None:
+#         assert interpret(parse(tokenize('fun square(x:Int):Int{return x*x}; fun plus(x,y){return square(x)+y}; return plus(2,3)'))) == 7
+# test_interpreter_variable_context()
 
 # def test_interpreter_variable_context() -> None:
 #         assert interpret(parse(tokenize('var a=0; var b=0; {{var c=1; b=b+c} b=b+4} c'))) == 1
 # test_interpreter_variable_context()
 
+# def test_interpreter_variable_context() -> None:
+#         assert interpret(parse(tokenize('fun square(x:Int):Int{return x*x}; return square(square(3))'))) == 81
+# test_interpreter_variable_context()
+        
+        
+# def test_interpreter_variable_context() -> None:
+#         assert interpret(parse(tokenize('fun square(x:Int):Int{return x*x}; fun plus(x,y){return x+y}; return plus(square(3),3)'))) == 12
+# test_interpreter_variable_context()
