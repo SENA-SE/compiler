@@ -70,7 +70,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
     
     def parse_arguments()-> list[ast.Expression]:
         args:list[ast.Expression] = []
-        while peek().text != ')':
+        while peek().text != ')' and peek().text !=':':
             if peek().text == ',':
                 consume(',')
             args.append(parse_expression())
@@ -322,6 +322,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
                     #     raise Exception(f'{pos}: Expected \';\' after expression within a block')
                     elif peek().text not in ('}', 'end') and not isinstance(expression, ast.IfExpression | ast.WhileExpression):
                         # If the expression is not an if-else statement, and we're not at the end or facing a closing brace, expect a semicolon.
+                        #TODO: no semicolon is allowed after function definition
                         raise Exception("Expected ';' after expression within a block, unless it's an if-else statement.")
 
                     expressions.append(expression)
@@ -380,7 +381,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
 
 # def test_parser_parse_variable_declaration() -> None:
-#     assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == ast.Function(
+#     assert parse(tokenize('fun square(x:Int):Int{return x*x}')) == ast.Function(
 #         name='square',
 #         args=[ast.VariableDeclaration(
 #             name='x',

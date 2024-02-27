@@ -137,7 +137,15 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             for i in range(0, len(node.expressions)-1):
                 interpret(node.expressions[i], variables)
             y=interpret(node.expressions[len(node.expressions)-1], variables)
-            return y
+            if isinstance(y, ast.FunctionCalled):
+                if len(y.arg_variables)!= len(y.args):
+                    raise Exception(f'Expected {len(arg_variables)} arguments')
+                for i in range(0, len(y.args)):
+                    variables.variables[y.arg_variables[i].name] = y.args[i].value
+                    print(y.args[i])
+                return  interpret(y.body, variables)
+            else:    
+                return y
         
         case ast.WhileExpression():
             condition = node.condition
@@ -157,10 +165,28 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
         
         case ast.Return():
             name = getattr(node.value, 'name', None)
+            if isinstance(node.value, ast.Function):
+                return interpret(node.value, symbol_table)
             if symbol_table.variables.get(name) is not None:
                 return symbol_table.variables[name]
             else:
                 return interpret(node.value, symbol_table)
+
+        case ast.Function():
+            if node.body is not None:
+                name = node.name
+                body = node.body
+                symbol_table.variables[name] = node
+
+                return symbol_table
+            else:
+                name = node.name
+                body = symbol_table.variables[name].body
+                return_type = symbol_table.variables[name].return_type
+                args = node.args
+                arg_variables = symbol_table.variables[name].args
+
+                return ast.FunctionCalled(name=name, body=body, return_type=return_type, args=args, arg_variables=arg_variables)
 
 
 
@@ -169,9 +195,9 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             
 
-# def test_interpreter_variable_context() -> None:
-#         assert interpret(parse(tokenize('var a=1; {var a=2; a=a+1;} return a+1'))) == 2
-# test_interpreter_variable_context()
+def test_interpreter_variable_context() -> None:
+        assert interpret(parse(tokenize('fun square(x:Int, y:Int):Int{return x*y}; return square(3,4)'))) == 12
+test_interpreter_variable_context()
         
 
 

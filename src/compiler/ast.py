@@ -70,6 +70,14 @@ class Function(Expression):
     body: Block = None
 
 @dataclass
+class FunctionCalled(Expression):
+    name: str
+    args: list[VariableDeclaration]
+    return_type: Type = None
+    body: Block = None
+    arg_variables: list[VariableDeclaration] = None
+    
+@dataclass
 class WhileExpression(Expression):
     condition: Expression
     do: Expression
