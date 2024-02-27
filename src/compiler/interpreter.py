@@ -57,14 +57,25 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
         
         case ast.BinaryOp():
+            # if isinstance(node.left, ast.Identifier) and node.operation in ['=']:
+            #     if isinstance(symbol_table.variables, dict) and node.left.name in symbol_table.variables:
+            #         symbol_table.variables[node.left.name] = interpret(node.right, symbol_table)
+            #         return None
+            #     elif isinstance(symbol_table, ast.HierarchicalSymTab) :
+            #         # symbol_table.parent.variables.update(symbol_table.variables)
+            #         return interpret(node, symbol_table.parent)
+            #     else:   raise Exception
             if isinstance(node.left, ast.Identifier) and node.operation in ['=']:
-                if isinstance(symbol_table.variables, dict) and node.left.name in symbol_table.variables:
-                    symbol_table.variables[node.left.name] = interpret(node.right, symbol_table)
-                    return None
-                elif isinstance(symbol_table, ast.HierarchicalSymTab) :
-                    symbol_table.parent.variables.update(symbol_table.variables)
-                    return interpret(node, symbol_table.parent)
-                else:   raise Exception
+                current_symbol_table = symbol_table
+                # Search for the variable in the current and all parent symbol tables
+                while current_symbol_table is not None:
+                    if node.left.name in current_symbol_table.variables:
+                        current_symbol_table.variables[node.left.name] = interpret(node.right, symbol_table)
+                        return None
+                    current_symbol_table = getattr(current_symbol_table, 'parent', None)
+                
+                # If the variable was not found in any scope, raise an exception
+                raise Exception(f'Variable {node.left.name} is not defined')
 
             a: Any = interpret(node.left, symbol_table)
             b: Any = interpret(node.right, symbol_table)
@@ -76,16 +87,6 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 if node.operation in ['or','and']:
                     operation_function = top_symbol_table.variables[node.operation]
                     return operation_function(node.left, node.right, symbol_table)
-                # elif node.operation in ['+=','-=']:
-                #     # operation_function = top_symbol_table.variables[node.operation]
-                #     # symbol_table.variables[node.left.name] = operation_function(a,b)
-                #     # Ensure 'a' is the current value of the variable
-                #     current_value = symbol_table.variables.get(node.left.name, 0)
-                #     operation_function = top_symbol_table.variables[node.operation]
-                #     # Calculate new value and update directly in the symbol table
-                #     new_value = operation_function(current_value, b)
-                #     symbol_table.variables[node.left.name] = new_value
-                #     return None
                 else:
                     operation_function = top_symbol_table.variables[node.operation]
                     return operation_function(a,b)
@@ -181,10 +182,6 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 return interpret(node.value, symbol_table)
 
         case ast.Function():
-            if isinstance(symbol_table, ast.HierarchicalSymTab) :
-                symbol_table.parent.variables.update(symbol_table.variables)
-                return interpret(node, symbol_table.parent)
-            
             if node.body is not None:
                 name = node.name
                 body = node.body
@@ -192,6 +189,9 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
                 return symbol_table
             else:
+                if isinstance(symbol_table, ast.HierarchicalSymTab) :
+                    symbol_table.parent.variables.update(symbol_table.variables)
+                    return interpret(node, symbol_table.parent)
                 name = node.name
                 # func = symbol_table.variables.get(name)
                 # func_scope = ast.HierarchicalSymTab({}, symbol_table)
@@ -224,11 +224,11 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 # test_interpreter_variable_context()
         
 
-def test_interpreter_variable_context() -> None:
-        assert interpret(parse(tokenize('fun square(x:Int):Int{return x*x}; fun plus(x,y){return square(x)+y}; return plus(2,3)'))) == 12
-test_interpreter_variable_context()
-
 # def test_interpreter_variable_context() -> None:
-#         assert interpret(parse(tokenize('var a=0; var b=0; {{var c=1; b=b+c} b=b+4} b'))) == 5
+#         assert interpret(parse(tokenize('fun square(x:Int):Int{return x*x}; fun plus(x,y){return square(x)+y}; return plus(2,3)'))) == 12
 # test_interpreter_variable_context()
+
+def test_interpreter_variable_context() -> None:
+        assert interpret(parse(tokenize('var a=0; var b=0; {{var c=1; b=b+c} b=b+4} c'))) == 1
+test_interpreter_variable_context()
 
