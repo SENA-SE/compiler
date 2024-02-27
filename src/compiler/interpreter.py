@@ -79,6 +79,12 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             a: Any = interpret(node.left, symbol_table)
             b: Any = interpret(node.right, symbol_table)
+
+            if isinstance(a, ast.FunctionCalled):
+                a = interpret(ast.Block(expressions=[a]), symbol_table)
+            if isinstance(b, ast.FunctionCalled):
+                b = interpret(ast.Block(expressions=[b]), symbol_table)
+
             top_symbol_table = symbol_table
 
             while isinstance(top_symbol_table, ast.HierarchicalSymTab):
@@ -88,6 +94,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                     operation_function = top_symbol_table.variables[node.operation]
                     return operation_function(node.left, node.right, symbol_table)
                 else:
+                    
                     operation_function = top_symbol_table.variables[node.operation]
                     return operation_function(a,b)
             else:
@@ -142,6 +149,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             y = node.expressions[len(node.expressions)-1]
             if not (isinstance(y, ast.FunctionCalled)):
                 y=interpret(node.expressions[len(node.expressions)-1], variables)
+
             if isinstance(y, ast.FunctionCalled):
                 if len(y.arg_variables)!= len(y.args):
                     raise Exception(f'Expected {len(arg_variables)} arguments')
@@ -149,7 +157,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                     if(isinstance(y.args[i], ast.Function)):
                         x=interpret(y.args[i], variables)
                         return interpret(ast.Block(expressions=[x]), variables)
-                    else:
+                    elif getattr(y.args[i], 'value', None) is not None:
                         variables.variables[y.arg_variables[i].name] = y.args[i].value
                     print(y.args[i])
                 return  interpret(y.body, variables)
@@ -189,29 +197,30 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
                 return symbol_table
             else:
-                if isinstance(symbol_table, ast.HierarchicalSymTab) :
-                    symbol_table.parent.variables.update(symbol_table.variables)
+                if node.name in symbol_table.variables: 
+                    name = node.name
+                    if not symbol_table.variables.get(name):
+                        raise Exception(f'Function {name} is not defined')
+
+                    # if len(func.args)!=len(node.args):
+                    #     raise Exception(f'Function {node.name} expects {len(func.args)} arguments, got {len(node.args)}')
+                    # for param, arg in zip(func.args, node.args):
+                    #      func_scope.variables[param.name] = interpret(arg, symbol_table)
+                    # result = interpret(func.body, func_scope)
+                    # return result
+
+                    body = symbol_table.variables[name].body
+                    return_type = symbol_table.variables[name].return_type
+                    args = node.args
+                    arg_variables = symbol_table.variables[name].args
+
+                    return ast.FunctionCalled(name=name, body=body, return_type=return_type, args=args, arg_variables=arg_variables)
+
+                elif isinstance(symbol_table, ast.HierarchicalSymTab):
                     return interpret(node, symbol_table.parent)
-                name = node.name
-                # func = symbol_table.variables.get(name)
-                # func_scope = ast.HierarchicalSymTab({}, symbol_table)
-                if not symbol_table.variables.get(name):
-                    raise Exception(f'Function {name} is not defined')
-
-                # if len(func.args)!=len(node.args):
-                #     raise Exception(f'Function {node.name} expects {len(func.args)} arguments, got {len(node.args)}')
-                # for param, arg in zip(func.args, node.args):
-                #      func_scope.variables[param.name] = interpret(arg, symbol_table)
-                # result = interpret(func.body, func_scope)
-                # return result
-
-                body = symbol_table.variables[name].body
-                return_type = symbol_table.variables[name].return_type
-                args = node.args
-                arg_variables = symbol_table.variables[name].args
-
-                return ast.FunctionCalled(name=name, body=body, return_type=return_type, args=args, arg_variables=arg_variables)
-
+                else:
+                    raise Exception(f'{node.name} is not defined')
+                
 
 
         case _:
@@ -224,11 +233,11 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 # test_interpreter_variable_context()
         
 
-# def test_interpreter_variable_context() -> None:
-#         assert interpret(parse(tokenize('fun square(x:Int):Int{return x*x}; fun plus(x,y){return square(x)+y}; return plus(2,3)'))) == 12
-# test_interpreter_variable_context()
-
 def test_interpreter_variable_context() -> None:
-        assert interpret(parse(tokenize('var a=0; var b=0; {{var c=1; b=b+c} b=b+4} c'))) == 1
+        assert interpret(parse(tokenize('fun square(x:Int):Int{return x*x}; fun plus(x,y){return square(x)+y}; return plus(2,3)'))) == 7
 test_interpreter_variable_context()
+
+# def test_interpreter_variable_context() -> None:
+#         assert interpret(parse(tokenize('var a=0; var b=0; {{var c=1; b=b+c} b=b+4} c'))) == 1
+# test_interpreter_variable_context()
 
