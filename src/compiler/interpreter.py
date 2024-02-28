@@ -1,3 +1,4 @@
+import copy
 from typing import Any
 from compiler import ast
 from compiler.parser1 import parse
@@ -91,13 +92,13 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 # If the variable was not found in any scope, raise an exception
                 raise Exception(f'Variable {node.left.name} is not defined')
 
-            a: Any = interpret(node.left, symbol_table)
-            b: Any = interpret(node.right, symbol_table)
-
-            if isinstance(a, ast.FunctionCalled):
-                a = interpret(ast.Block(expressions=[a]), symbol_table)
-            if isinstance(b, ast.FunctionCalled):
-                b = interpret(ast.Block(expressions=[b]), symbol_table)
+            a = interpret(node.left, symbol_table)
+            b = interpret(node.right, symbol_table)
+    #while a,b are expressions...
+            if isinstance(a, ast.Expression):
+                a = interpret(a, symbol_table)
+            if isinstance(b, ast.Expression):
+                b = interpret(b, symbol_table)
 
             top_symbol_table = symbol_table
 
@@ -128,7 +129,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             return node.value
         
         case ast.Identifier():
-            if node.name in symbol_table.variables: 
+            if node.name in symbol_table.variables and not isinstance(symbol_table.variables[node.name], ast.Expression): 
                 return symbol_table.variables[node.name]
             elif isinstance(symbol_table, ast.HierarchicalSymTab):
                 return interpret(node, symbol_table.parent)
@@ -154,12 +155,40 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             if symbol_table.variables.get(node.name) is not None:
                     raise Exception(f"The variable {node.name} has already been declared")
             symbol_table.variables[node.name] = interpret(node.assignment, symbol_table)
-
+            return symbol_table.variables[node.name]
+        
+        case ast.FunctionCalled():
+                for i in range(0, len(node.arg_variables)):
+                    symbol_table.variables[node.arg_variables[i].name] = node.arg_variables[i].assignment
+                    if isinstance(symbol_table.variables[node.arg_variables[i].name], ast.Literal):
+                        symbol_table.variables[node.arg_variables[i].name] = symbol_table.variables[node.arg_variables[i].name].value
+                    if isinstance(symbol_table.variables[node.arg_variables[i].name], ast.Identifier):
+                        symbol_table.variables[node.arg_variables[i].name] = interpret(symbol_table.variables[node.arg_variables[i].name], symbol_table)
+                    if isinstance(symbol_table.variables[node.arg_variables[i].name], ast.Function):
+                        symbol_table.variables[node.arg_variables[i].name] = interpret(symbol_table.variables[node.arg_variables[i].name], symbol_table)
+                    if isinstance(symbol_table.variables[node.arg_variables[i].name], ast.FunctionCalled):
+                        symbol_table.variables[node.arg_variables[i].name] = interpret(symbol_table.variables[node.arg_variables[i].name], symbol_table)
+                    # if isinstance(node.arg_variables[i].assignment, ast.Literal):
+                    #     symbol_table.variables[node.arg_variables[i].name] = node.arg_variables[i].assignment.value
+                    #     # return y.arg_variables[i].assignment.value
+                    # else:
+                    #     symbol_table.variables[node.arg_variables[i].name] = interpret(node.arg_variables[i].assignment, symbol_table)
+                    #     while not isinstance(symbol_table.variables[node.arg_variables[i].name], ast.Literal):
+                    #         symbol_table.variables[node.arg_variables[i].name] = interpret(symbol_table.variables[node.arg_variables[i].name], symbol_table)
+                return interpret(node.body, symbol_table)
+        
         case ast.Block():
             variables = ast.HierarchicalSymTab({}, symbol_table)
-            y = node.expressions[len(node.expressions)-1]
+            # y = node.expressions[len(node.expressions)-1]
             for i in range(0, len(node.expressions)-1):
-                y = interpret(node.expressions[i], variables)
+                result = interpret(node.expressions[i], variables)
+                if isinstance(result, ast.FunctionCalled):
+                    result = interpret(result, variables)
+            if getattr(node.expressions[len(node.expressions)-1],'value', None) is not None:
+                result = interpret(node.expressions[len(node.expressions)-1], variables)
+            if isinstance(result, ast.FunctionCalled):
+                return interpret(result, variables)
+            else:   return result
             
             last = node.expressions[len(node.expressions)-1]
             if getattr(last, 'value', None) is not None:
@@ -168,16 +197,40 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 y=interpret(node.expressions[len(node.expressions)-1], variables)
 
             if isinstance(y, ast.FunctionCalled):
-                for i in range(0, len(y.args)):
-                    if(isinstance(y.args[i], ast.Function)):
-                        x=interpret(y.args[i], variables)
-                        
-                        variables.variables[y.arg_variables[i].name] = interpret(ast.Block(expressions=[x]), variables)
-                    elif getattr(y.args[i], 'value', None) is not None: # if it is assigned with values
-                        variables.variables[y.arg_variables[i].name] = y.args[i].value
+                interpret(y, variables)
+            #     for i in range(0, len(y.arg_variables)):
+            #         if isinstance(y.arg_variables[i].assignment, ast.Literal):
+            #             variables.variables[y.arg_variables[i].name] = y.arg_variables[i].assignment.value
+            #             # return y.arg_variables[i].assignment.value
+            #         else:
+            #             variables.variables[y.arg_variables[i].name] = interpret(y.arg_variables[i].assignment, variables)
+            #             while not isinstance(variables.variables[y.arg_variables[i].name], ast.Literal):
+            #                 variables.variables[y.arg_variables[i].name] = interpret(variables.variables[y.arg_variables[i].name], variables)
+                        # while isinstance(y, ast.Expression):
+                        #     if isinstance(y.arg_variables[i], ast.VariableDeclaration):
+                        #         y = interpret(y.arg_variables[i], variables)
+                        #     elif isinstance(y, ast.FunctionCalled):
+                        #         y = interpret(ast.Block(expressions=[y.arg_variables[i]]), variables)
+                        #     else:   y = interpret(y.arg_variables[i].assignment, variables)
+                        #     variables.variables[y.arg_variables[i].name]  = y
+                    # if(isinstance(y.arg_variables[i], ast.Function)):
+                    #     print(y)
+                    #     # x=interpret(y.args[i], variables)
+                    #     # if (isinstance(x, ast.FunctionCalled)):
+                    #     #     variables.variables[x.arg_variables[i].name] = x.arg_variables[i].assignment
+                    #     #     interpret(ast.Block(expressions=[x]), variables)
+                    #     # else:
+                    #     #     variables.variables[y.arg_variables[i].name] = interpret(ast.Block(expressions=[x]), variables)
+                    #     #     interpret(ast.Block(expressions=[x]), variables)
+                    # elif getattr(y.args[i], 'value', None) is not None: # if it is assigned with values
+                    #     variables.variables[y.arg_variables[i].name] = y.args[i].value
+                    # elif getattr(y.arg_variables[i], 'assignment', None) is not None:
+                    #     x=interpret(y.args[i], variables)
+                    #     variables.variables[y.arg_variables[i].name] = y.arg_variables[i].assignment
+                    #     interpret(ast.Block(expressions=[x]), variables)
                     # else:
                         
-                    print(y.args[i])
+                    # print(y.args[i])
                 return  interpret(y.body, variables)
             elif isinstance(y, ast.LibraryFunctionCalled):
                 x = interpret(y, variables)
@@ -260,14 +313,15 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                         # arg_variables = symbol_table.variables[name].args
                         args = node.args
                         arg_variables = symbol_table.variables[name].args
+                        new_arg_variables = [copy.deepcopy(arg) for arg in arg_variables]
                         if (len(arg_variables)!= len(args)):
                             raise Exception(f'Expected {len(symbol_table.variables[name].args)} arguments')
                         for i in range(0, len(args)):
-                            if getattr(args[i], 'name', None) is not None and not isinstance(args[i], ast.Function):
+                            # if getattr(args[i], 'name', None) is not None and not isinstance(args[i], ast.Function):
                                 # arg_variables[i].name = args[i].name
-                                args[i].name = arg_variables[i].name
-
-                        return ast.FunctionCalled(name=name, body=body, return_type=return_type, args=args, arg_variables=arg_variables)
+                                new_arg_variables[i].assignment = args[i]
+                        return ast.FunctionCalled(name=name, body=body, return_type=return_type, arg_variables=new_arg_variables)
+                    # interpret functioncalled?
 
                 elif isinstance(symbol_table, ast.HierarchicalSymTab):
                     return interpret(node, symbol_table.parent)
@@ -335,3 +389,7 @@ fun print_int_twice(x: Int) {
 }
 
 print_int_twice(vec_len_squared(3, 4));""")))
+        
+# def test_interpreter_variable_context() -> None:
+#         assert interpret(parse(tokenize('var a=2; fun plus(x: Int, y:Int){return x+y} fun square(x: Int){return x*x} return square(plus(a,3))'))) == 25
+# test_interpreter_variable_context()

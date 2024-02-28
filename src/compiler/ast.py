@@ -80,7 +80,6 @@ class LibraryFunctionCalled(Expression):
 @dataclass
 class FunctionCalled(Expression):
     name: str
-    args: list[VariableDeclaration]
     return_type: Type = None
     body: Block = None
     arg_variables: list[VariableDeclaration] = None
