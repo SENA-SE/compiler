@@ -33,6 +33,7 @@ class BinaryOp(Expression):
     left:Expression
     operation: str
     right: Expression
+    arg_variables: Expression = None
 
 @dataclass
 class IfExpression(Expression):
@@ -68,6 +69,13 @@ class Function(Expression):
     args: list[VariableDeclaration]
     return_type: Type = None
     body: Block = None
+
+@dataclass
+class LibraryFunctionCalled(Expression):
+    name: str
+    args: list[VariableDeclaration]
+    return_type: Type = None
+    operation: Expression = None
 
 @dataclass
 class FunctionCalled(Expression):

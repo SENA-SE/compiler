@@ -375,3 +375,28 @@ def test_parser_parse_variable_declaration() -> None:
 
     )
 
+def test_parser_parse_variable_declaration() -> None:
+    assert parse(tokenize("""
+
+fun print_int_twice(x: Int) {
+    print_int(x);
+}
+
+""")) == Function(
+        name='print_int_twice',
+        args=[VariableDeclaration(
+            name='x',
+            variable_type=Int
+            )],
+        return_type=None,
+        body=Block([
+        Function(
+            name='print_int',
+            args=[VariableDeclaration(
+            name='x'
+            )]
+        )
+    ])
+
+    )
+

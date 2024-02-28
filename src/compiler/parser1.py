@@ -70,9 +70,11 @@ def parse(tokens: list[Token]) -> ast.Expression:
     
     def parse_arguments()-> list[ast.Expression]:
         args:list[ast.Expression] = []
-        while peek().text != ')' and peek().text !=':':
+        while peek().type != 'end' and peek().text != ')' and peek().text !=':' and peek().text !='{':
             if peek().text == ',':
                 consume(',')
+            if peek().text == ';':
+                consume(';')
             args.append(parse_expression())
 
         print(f'args{args}')
@@ -128,6 +130,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
         # to parse whatever is inside the parentheses.
         expr = parse_expression()
         if peek().text == ')': consume(')')
+        if peek().text == ';': consume(';')
         return expr  
     
     def parse_if() -> ast.Expression:
@@ -404,3 +407,10 @@ def parse(tokens: list[Token]) -> ast.Expression:
 #     )
 # test_parser_parse_variable_declaration()
 
+# parse(tokenize("""
+
+# fun print_int_twice(x: Int) {
+#     print_int(x);
+# }
+
+# """))
