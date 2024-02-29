@@ -32,11 +32,11 @@ class Copy(Instruction):
     source: IRVar
     dest: IRVar
 
-# @dataclass(frozen=True)
-# class LoadBoolConst(Instruction):
-#     """Loads a boolean constant value to `dest`."""
-#     value: bool
-#     dest: IRVar
+@dataclass(frozen=True)
+class LoadBoolConst(Instruction):
+    """Loads a boolean constant value to `dest`."""
+    value: bool
+    dest: IRVar
 
 
 @dataclass(frozen=True)

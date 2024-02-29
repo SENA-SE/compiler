@@ -317,5 +317,5 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 # test_interpreter_variable_context()
 
 # def test_interpreter_variable_context() -> None:
-#         assert interpret(parse(tokenize('{var a = 1;  a + 1}'))) == 2
+#         assert interpret(parse(tokenize('if 2>1 then 2*(2+3) else 3*3'))) == 2
 # test_interpreter_variable_context()

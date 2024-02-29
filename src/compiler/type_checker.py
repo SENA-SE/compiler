@@ -32,6 +32,15 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 raise Exception(f'Unary operation {node.operation} is not supported')
             
         case ast.BinaryOp():
+            if isinstance(node.left, ast.Identifier) and node.operation == '=':
+                if isinstance(symbol_table.variables, dict) and node.left.name in symbol_table.variables:
+                    symbol_table.variables[node.left.name] = typecheck(node.right, symbol_table)
+                    return Unit
+                elif isinstance(symbol_table, ast.HierarchicalSymTab):
+                    return typecheck(node, symbol_table.parent)
+                else:
+                    raise Exception(f'{node.left.name} is not defined')
+
             t1 = typecheck(node.left)
             t2 = typecheck(node.right)
             if node.operation in ['+','-','*','-','%']:
@@ -58,7 +67,7 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 return Bool
             else: 
                 raise Exception(f'{node.operation} is not a supported operation')
-            
+        
         case ast.IfExpression():
             t1 = typecheck(node.condition)
             t2 = typecheck(node.then_branch)
@@ -81,9 +90,20 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             elif type(node.value) is bool:
                 node.type = Bool
                 return Bool
+            elif isinstance(node, ast.Literal) and node.value is None:
+                return
             else:
                 raise Exception(f"{node.value} is not an integer or a boolean value")
         
+        case ast.Identifier():
+            if node.name in symbol_table.variables:
+                return symbol_table.variables[node.name]
+            elif isinstance(symbol_table, ast.HierarchicalSymTab):
+                return typecheck(node, symbol_table.parent)
+            else:
+                raise Exception(f"{node.name} is not defined")
+
+
         case ast.Function():
             fun_arg_type = []
 
