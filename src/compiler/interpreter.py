@@ -182,7 +182,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             # y = node.expressions[len(node.expressions)-1]
             for i in range(0, len(node.expressions)-1):
                 result = interpret(node.expressions[i], variables)
-                if isinstance(result, ast.FunctionCalled):
+                if isinstance(result, ast.FunctionCalled | ast.LibraryFunctionCalled):
                     result = interpret(result, variables)
             if getattr(node.expressions[len(node.expressions)-1],'value', None) is not None:
                 result = interpret(node.expressions[len(node.expressions)-1], variables)
@@ -198,39 +198,6 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             if isinstance(y, ast.FunctionCalled):
                 interpret(y, variables)
-            #     for i in range(0, len(y.arg_variables)):
-            #         if isinstance(y.arg_variables[i].assignment, ast.Literal):
-            #             variables.variables[y.arg_variables[i].name] = y.arg_variables[i].assignment.value
-            #             # return y.arg_variables[i].assignment.value
-            #         else:
-            #             variables.variables[y.arg_variables[i].name] = interpret(y.arg_variables[i].assignment, variables)
-            #             while not isinstance(variables.variables[y.arg_variables[i].name], ast.Literal):
-            #                 variables.variables[y.arg_variables[i].name] = interpret(variables.variables[y.arg_variables[i].name], variables)
-                        # while isinstance(y, ast.Expression):
-                        #     if isinstance(y.arg_variables[i], ast.VariableDeclaration):
-                        #         y = interpret(y.arg_variables[i], variables)
-                        #     elif isinstance(y, ast.FunctionCalled):
-                        #         y = interpret(ast.Block(expressions=[y.arg_variables[i]]), variables)
-                        #     else:   y = interpret(y.arg_variables[i].assignment, variables)
-                        #     variables.variables[y.arg_variables[i].name]  = y
-                    # if(isinstance(y.arg_variables[i], ast.Function)):
-                    #     print(y)
-                    #     # x=interpret(y.args[i], variables)
-                    #     # if (isinstance(x, ast.FunctionCalled)):
-                    #     #     variables.variables[x.arg_variables[i].name] = x.arg_variables[i].assignment
-                    #     #     interpret(ast.Block(expressions=[x]), variables)
-                    #     # else:
-                    #     #     variables.variables[y.arg_variables[i].name] = interpret(ast.Block(expressions=[x]), variables)
-                    #     #     interpret(ast.Block(expressions=[x]), variables)
-                    # elif getattr(y.args[i], 'value', None) is not None: # if it is assigned with values
-                    #     variables.variables[y.arg_variables[i].name] = y.args[i].value
-                    # elif getattr(y.arg_variables[i], 'assignment', None) is not None:
-                    #     x=interpret(y.args[i], variables)
-                    #     variables.variables[y.arg_variables[i].name] = y.arg_variables[i].assignment
-                    #     interpret(ast.Block(expressions=[x]), variables)
-                    # else:
-                        
-                    # print(y.args[i])
                 return  interpret(y.body, variables)
             elif isinstance(y, ast.LibraryFunctionCalled):
                 x = interpret(y, variables)
