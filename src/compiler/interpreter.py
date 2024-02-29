@@ -21,23 +21,12 @@ SymbolList = {
     'or': lambda x, y, st: or_operation(x,y,st),
     'and': lambda x, y,st: and_operation(x,y,st),
     'print_int':lambda x : print(x),
+    'print_bool':lambda x : print(x),
 
     'unary': lambda x: not x if isinstance(x, bool) else -x,
 }
 
-library_functions = ['print_int','print_bool']
-
-# print_int = ast.LibraryFunction(name='print_int', args=[ast.VariableDeclaration(name='x')],expression=lambda x: print(x))
-
-# def read_int():
-
-
-# def print_bool(x):
-#     print(x)
-
-# SymbolList['print_int'] = print_int
-# # SymbolList['read_int'] = read_int
-# SymbolList['print_bool'] = print_bool
+library_functions = ['print_int','print_bool','read_int']
 
 def or_operation(a,b,symbol_table:ast.SymTab) -> bool:
     if interpret(a, symbol_table) == False:
@@ -72,14 +61,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
         
         case ast.BinaryOp():
-            # if isinstance(node.left, ast.Identifier) and node.operation in ['=']:
-            #     if isinstance(symbol_table.variables, dict) and node.left.name in symbol_table.variables:
-            #         symbol_table.variables[node.left.name] = interpret(node.right, symbol_table)
-            #         return None
-            #     elif isinstance(symbol_table, ast.HierarchicalSymTab) :
-            #         # symbol_table.parent.variables.update(symbol_table.variables)
-            #         return interpret(node, symbol_table.parent)
-            #     else:   raise Exception
+
             if isinstance(node.left, ast.Identifier) and node.operation in ['=']:
                 current_symbol_table = symbol_table
                 # Search for the variable in the current and all parent symbol tables
@@ -94,7 +76,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             a = interpret(node.left, symbol_table)
             b = interpret(node.right, symbol_table)
-    #while a,b are expressions...
+    #TODO:while a,b are expressions...
             if isinstance(a, ast.Expression):
                 a = interpret(a, symbol_table)
             if isinstance(b, ast.Expression):
@@ -168,13 +150,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                         symbol_table.variables[node.arg_variables[i].name] = interpret(symbol_table.variables[node.arg_variables[i].name], symbol_table)
                     if isinstance(symbol_table.variables[node.arg_variables[i].name], ast.FunctionCalled):
                         symbol_table.variables[node.arg_variables[i].name] = interpret(symbol_table.variables[node.arg_variables[i].name], symbol_table)
-                    # if isinstance(node.arg_variables[i].assignment, ast.Literal):
-                    #     symbol_table.variables[node.arg_variables[i].name] = node.arg_variables[i].assignment.value
-                    #     # return y.arg_variables[i].assignment.value
-                    # else:
-                    #     symbol_table.variables[node.arg_variables[i].name] = interpret(node.arg_variables[i].assignment, symbol_table)
-                    #     while not isinstance(symbol_table.variables[node.arg_variables[i].name], ast.Literal):
-                    #         symbol_table.variables[node.arg_variables[i].name] = interpret(symbol_table.variables[node.arg_variables[i].name], symbol_table)
+
                 return interpret(node.body, symbol_table)
         
         case ast.Block():
@@ -189,22 +165,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             if isinstance(result, ast.FunctionCalled):
                 return interpret(result, variables)
             else:   return result
-            
-            last = node.expressions[len(node.expressions)-1]
-            if getattr(last, 'value', None) is not None:
-                y = node.expressions[len(node.expressions)-1]
-            if (not (isinstance(y, ast.FunctionCalled))) and isinstance(y, ast.Expression):
-                y=interpret(node.expressions[len(node.expressions)-1], variables)
 
-            if isinstance(y, ast.FunctionCalled):
-                interpret(y, variables)
-                return  interpret(y.body, variables)
-            elif isinstance(y, ast.LibraryFunctionCalled):
-                x = interpret(y, variables)
-                return None
-            else:    
-                return y
-        
         case ast.WhileExpression():
             condition = node.condition
             counter = 0
@@ -231,11 +192,6 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 return interpret(node.value, symbol_table)
             
         case ast.LibraryFunctionCalled():
-            # top_symbol_table = symbol_table
-            # while isinstance(top_symbol_table, ast.HierarchicalSymTab):
-            #     top_symbol_table = top_symbol_table.parent
-            # if node.name in top_symbol_table.variables:
-            #         operation_function = top_symbol_table.variables[node.name]
                     arg_variables = []
                     for i in range(0, len(node.args)):
                         arg = node.args[i]
@@ -284,8 +240,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                         if (len(arg_variables)!= len(args)):
                             raise Exception(f'Expected {len(symbol_table.variables[name].args)} arguments')
                         for i in range(0, len(args)):
-                            # if getattr(args[i], 'name', None) is not None and not isinstance(args[i], ast.Function):
-                                # arg_variables[i].name = args[i].name
+
                                 new_arg_variables[i].assignment = args[i]
                         return ast.FunctionCalled(name=name, body=body, return_type=return_type, arg_variables=new_arg_variables)
                     # interpret functioncalled?

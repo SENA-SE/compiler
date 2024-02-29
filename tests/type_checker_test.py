@@ -30,6 +30,9 @@ def test_type_checker_variable_declaration() -> None:
 
 def test_parser_assign_invalid_type() -> None:
     try:
-         parse(tokenize('var x: Int = 1>2'))
+         typecheck(parse(tokenize('var x: Int = 1>2')))
     except Exception:
         assert True
+
+def test_type_checker_function() -> None:
+    assert typecheck(parse(tokenize('fun square(x:Int, y:Int):Int{return x*y};  return square(3,4)'))) == Int

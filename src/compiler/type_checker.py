@@ -3,11 +3,11 @@ from compiler.tokenizer import tokenize
 import compiler.ast as ast
 from compiler.ast import Int, Bool, Unit
 SymbolList = {
-    '+': (Int, Int, Int),
-    '<': (Int, Int, Int),
-    'or': (Bool, Bool, Bool),
-    'print_int': (Int, Unit),
-    'print_bool': (Bool, Unit),
+    '+': [Int, Int, Int],
+    '<': [Int, Int, Int],
+    'or': [Bool, Bool, Bool],
+    'print_int': [Int, Unit],
+    'print_bool': [Bool, Unit],
     # and so on...
 }
 
@@ -82,17 +82,27 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 node.type = Bool
                 return Bool
             else:
-                raise Exception(f"{node.value} is not an integer")
+                raise Exception(f"{node.value} is not an integer or a boolean value")
         
         case ast.Function():
-            function_type = symbol_table.variables[node.name]
-            arg_types = [typecheck(arg, symbol_table) for arg in node.args]
+            fun_arg_type = []
 
-            for arg_type, required_type in zip(arg_types, function_type[:-1]):
-                if arg_type != required_type:
-                    raise Exception(f'Expected type {required_type}, but got {arg_type}')
-            node.type = function_type[-1]
-            return function_type[-1]
+
+            
+            if node.body is None:
+                fun_arg_type = symbol_table.variables[node.name]
+                arg_types = [typecheck(arg, symbol_table) for arg in node.args]
+
+                for arg_type, required_type in zip(arg_types, fun_arg_type[:-1]):
+                    if arg_type != required_type:
+                        raise Exception(f'Expected type {required_type}, but got {arg_type}')
+                node.type = fun_arg_type[-1]
+            else:
+                for arg in node.args:
+                    fun_arg_type.append(arg.variable_type)
+                fun_arg_type.append(node.return_type)
+                symbol_table.variables[node.name] = fun_arg_type
+            return fun_arg_type[-1]
         
         case ast.VariableDeclaration():
             assigned_type = typecheck(node.assignment, symbol_table)
@@ -107,12 +117,27 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 symbol_table.variables[node.name] = assigned_type
                 node.type = assigned_type
                 return assigned_type
+        
+        case ast.Block():
+            for i in range(0, len(node.expressions)-1):
+                typecheck(node.expressions[i], symbol_table)
+            result = typecheck(node.expressions[len(node.expressions)-1],symbol_table)
+            return result
+        
+        case ast.Return():
+            name = getattr(node.value, 'name', None)
+            if isinstance(node.value, ast.Function):
+                return typecheck(node.value, symbol_table)
+            if symbol_table.variables.get(name) is not None:
+                return symbol_table.variables[name]
+            else:
+                return typecheck(node.value, symbol_table)
 
 
         case _:
             raise Exception(f'{node} is not supported')
         
 # def test_type_checker_if_else_unit() -> None:
-#     assert typecheck(parse(tokenize('if not true then 1'))) == Unit
+#     assert typecheck(parse(tokenize('print_int(1)'))) == Unit
 # test_type_checker_if_else_unit()
 
