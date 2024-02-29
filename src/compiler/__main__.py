@@ -4,7 +4,7 @@ from compiler.assembler import assemble
 from compiler.assembly_generator import generate_assembly
 from compiler.ir_generator import generate_ir
 from compiler.parser1 import parse
-
+from compiler.interpreter import interpret
 from compiler.tokenizer import tokenize
 from compiler.type_checker import typecheck
 
@@ -49,7 +49,10 @@ def main() -> int:
 
     if command == 'interpret':
         source_code = read_source_code()
-        ...  # TODO(student)
+        tokens = tokenize(source_code)
+        ast_node = parse(tokens)
+        typecheck(ast_node)
+        interpret(ast_node)
     elif command == 'ir':
         source_code = read_source_code()
         tokens = tokenize(source_code)

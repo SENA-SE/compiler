@@ -23,7 +23,7 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
         match insn:
             case ir.Label():
                 emit(f'.L{insn.name}:')
-            case ir.LoadIntConst():
+            case ir.LoadIntConst() | ir.LoadBoolConst:
                 emit(f'movq ${insn.value}, {locals.get_ref(insn.dest)}')
                 #TODO: doesn't work if insn.value is too large or too small
             case ir.Copy():

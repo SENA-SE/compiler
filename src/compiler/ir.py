@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 @dataclass(frozen=True)
 class IRVar:
@@ -26,6 +27,14 @@ class Call(Instruction):
 class LoadIntConst(Instruction):
     value: int
     dest: IRVar
+
+@dataclass(frozen=True)
+class FunctionDefinition(Instruction):
+    name: Label
+
+@dataclass(frozen=True)
+class Return(Instruction):
+    value: Optional[IRVar] = None
 
 @dataclass(frozen=True)
 class Copy(Instruction):

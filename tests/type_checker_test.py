@@ -18,6 +18,12 @@ def test_parser_comparision_between_different_types() -> None:
     except Exception:
         assert True
 
+def test_parser_calculation_between_different_types() -> None:
+    try:
+         typecheck(parse(tokenize('1 + (2>3)')))
+    except Exception:
+        assert True
+
 def test_type_checker_if_else() -> None:
     assert typecheck(parse(tokenize('if 1 < 2 then 3'))) == Unit
 

@@ -4,6 +4,8 @@ from compiler import ast
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 from compiler.type_checker import typecheck
+from compiler.assembler import assemble
+from compiler.assembly_generator import generate_assembly
 
 SymbolList = {}
 
@@ -28,8 +30,10 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
         match node:
             case ast.Literal():
                 var = new_var()
-                if isinstance(node.value, int):
+                if type(node.value) is int:
                     instructions.append(ir.LoadIntConst(node.value, var))
+                elif type(node.value) is bool:
+                    instructions.append(ir.LoadBoolConst(node.value, var))
                 return var
             
             case ast.BinaryOp():
@@ -81,11 +85,20 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
             
             case ast.VariableDeclaration():
                 # var_right = visit(node.right)
-                var = new_var()
-                var_result = new_var()
+
+
                 var_right = getattr(node.assignment,'value', None)
-                if isinstance(var_right, int):
-                    instructions.append(ir.LoadIntConst(var_right, var))
+                if var_right is not None:
+                    var = new_var()
+                    var_result = new_var()
+                    if type(var_right) is int:
+                        instructions.append(ir.LoadIntConst(var_right, var))
+                    if type(var_right) is bool:
+                        instructions.append(ir.LoadBoolConst(var_right, var))
+                else:
+                    if isinstance(node.assignment, ast.Expression):
+                        var = visit(node.assignment, symbol_table)
+                    var_result = new_var()
                 instructions.append(ir.Copy(source=var, dest=var_result))
                 symbol_table.variables[node.name] = var_result
                 return var_result
@@ -133,10 +146,51 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                     return symbol_table.variables[node.name]
                 elif isinstance(symbol_table, ast.HierarchicalSymTab):
                     return visit(node, symbol_table.parent)
-
+                
             case ast.Return():
                 return visit(node.value, symbol_table)
-            # case ast.Function():
+            
+            case ast.Function():
+                fun_label = new_label()
+                instructions.append(ir.FunctionDefinition(name=fun_label))
+                symbol_table.variables[node.name] = fun_label
+
+                fun_symbol_table = ast.SymTab(variables={})
+
+                for arg in node.args:
+                    var = new_var()
+                    fun_symbol_table.variables[arg.name] = var
+                
+                for expression in node.body.expressions:
+                    visit(expression, fun_symbol_table)
+
+                # if node.body is not None:
+                #     body_instructions = [visit(child) for child in node.body.expressions]
+                    
+                #     var = new_var()
+                #     var_result = new_var()
+                #     # var_right = getattr(node.body,'value', None)
+                #     # if isinstance(var_right, int):
+                #     #     instructions.append(ir.LoadIntConst(var_right, var))
+                #     # instructions.append(ir.Copy(source=var, dest=var_result))
+                #     body = node.body
+                #     instructions.append(ir.Copy)
+                #     symbol_table.variables[node.name] = var_result
+                #     return var_result
+
+
+                # else:
+                #     args = []
+                #     for arg in node.args:
+                #         args.append(visit(arg,symbol_table))
+                #     # var_result = visit(node)
+                #     instructions.append(ir.Call(
+                #         IRVar(node.name),
+                #         args,
+                #         new_var()
+                #     ))
+                    
+
             #     # Assuming the Function node has a name, args (list of arguments), and a body (an Expression)
             #     # First, create a label for the function entry
             #     fun_label = Label(node.name)
@@ -175,8 +229,9 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
     ))
     return instructions
 
-tokens = tokenize('var a=1; {var a=2; a=a+1;} return a+1')
+tokens = tokenize('var c=1; var d = -c;')
 ast_node = parse(tokens)
 typecheck(ast_node)
 ir_instructions = generate_ir(ast_node)
 print("\n".join([str(ins) for ins in ir_instructions]))
+asm_code = generate_assembly(ir_instructions)
