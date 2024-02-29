@@ -352,7 +352,7 @@ def test_parser_while() -> None:
 #     assert parsed_expression == expected_ast, "Failed to parse pointer dereference operation correctly"
     
 
-def test_parser_parse_variable_declaration() -> None:
+def test_parser_parse_function_declaration() -> None:
     assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == Function(
         name='square',
         args=[VariableDeclaration(
@@ -370,33 +370,30 @@ def test_parser_parse_variable_declaration() -> None:
             left=Identifier(name='x'),
             operation='*',
             right=Identifier(name='x')
-        ))
-    ])
+        ))]))
 
-    )
-
-def test_parser_parse_variable_declaration() -> None:
     assert parse(tokenize("""
 
-fun print_int_twice(x: Int) {
-    print_int(x);
-}
+    fun print_int_twice(x: Int) {
+        print_int(x);
+    }
 
-""")) == Function(
-        name='print_int_twice',
-        args=[VariableDeclaration(
-            name='x',
-            variable_type=Int
-            )],
-        return_type=None,
-        body=Block([
-        Function(
-            name='print_int',
+    """)) == Function(
+            name='print_int_twice',
             args=[VariableDeclaration(
-            name='x'
-            )]
-        )
-    ])
+                name='x',
+                variable_type=Int
+                )],
+            return_type=None,
+            body=Block([
+            Function(
+                name='print_int',
+                args=[Identifier('x')]
+            ),
+            Literal(value=None)
 
-    )
+        ])
+
+        )
+
 

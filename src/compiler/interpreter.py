@@ -184,7 +184,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 result = interpret(node.expressions[i], variables)
                 if isinstance(result, ast.FunctionCalled | ast.LibraryFunctionCalled):
                     result = interpret(result, variables)
-            if getattr(node.expressions[len(node.expressions)-1],'value', None) is not None:
+            if not (isinstance(node.expressions[len(node.expressions)-1], ast.Literal) and getattr(node.expressions[len(node.expressions)-1],'value', None) is None):
                 result = interpret(node.expressions[len(node.expressions)-1], variables)
             if isinstance(result, ast.FunctionCalled):
                 return interpret(result, variables)
@@ -342,21 +342,25 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
 # """)))
         
-interpret(parse(tokenize("""fun square(x: Int): Int {
-    return x * x;
-}
+# interpret(parse(tokenize("""fun square(x: Int): Int {
+#     return x * x;
+# }
 
-fun vec_len_squared(x: Int, y: Int): Int {
-    return square(x) + square(y);
-}
+# fun vec_len_squared(x: Int, y: Int): Int {
+#     return square(x) + square(y);
+# }
 
-fun print_int_twice(x: Int) {
-    print_int(x);
-    print_int(x);
-}
+# fun print_int_twice(x: Int) {
+#     print_int(x);
+#     print_int(x);
+# }
 
-print_int_twice(vec_len_squared(3, 4));""")))
+# print_int_twice(vec_len_squared(3, 4));""")))
         
 # def test_interpreter_variable_context() -> None:
 #         assert interpret(parse(tokenize('var a=2; fun plus(x: Int, y:Int){return x+y} fun square(x: Int){return x*x} return square(plus(a,3))'))) == 25
+# test_interpreter_variable_context()
+
+# def test_interpreter_variable_context() -> None:
+#         assert interpret(parse(tokenize('{var a = 1;  a + 1}'))) == 2
 # test_interpreter_variable_context()
