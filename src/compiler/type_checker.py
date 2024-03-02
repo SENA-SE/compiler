@@ -114,7 +114,7 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                 arg_types = [typecheck(arg, symbol_table) for arg in node.args]
 
                 for arg_type, required_type in zip(arg_types, fun_arg_type[:-1]):
-                    if arg_type != required_type:
+                    if arg_type is not None and arg_type != required_type:
                         raise Exception(f'Expected type {required_type}, but got {arg_type}')
                 node.type = fun_arg_type[-1]
             else:

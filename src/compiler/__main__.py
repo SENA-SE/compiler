@@ -68,7 +68,7 @@ def main() -> int:
         ir_instructions = generate_ir(ast_node)
         asm_code = generate_assembly(ir_instructions)
         print(asm_code)
-    elif command == 'compiled':
+    elif command == 'compile':
         source_code = read_source_code()
         tokens = tokenize(source_code)
         ast_node = parse(tokens)

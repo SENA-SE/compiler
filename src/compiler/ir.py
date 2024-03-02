@@ -30,7 +30,8 @@ class LoadIntConst(Instruction):
 
 @dataclass(frozen=True)
 class FunctionDefinition(Instruction):
-    name: Label
+    name: str
+    label: Label
 
 @dataclass(frozen=True)
 class Return(Instruction):

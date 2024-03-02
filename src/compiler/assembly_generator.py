@@ -2,11 +2,15 @@ import dataclasses
 from compiler import ir
 from compiler.intrinsics import IntrinsicArgs, all_intrinsics
 
+
+
 def generate_assembly(instructions: list[ir.Instruction]) -> str:
     assembly_code_lines = []
     def emit(line: str) -> None: assembly_code_lines.append(line)
 
     locals = Locals(get_all_ir_variables(instructions))
+    function_table = {}
+    flag_definition = False
 
     emit('.global main')
     emit('.type main, @function')
@@ -23,6 +27,11 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
         match insn:
             case ir.Label():
                 emit(f'.L{insn.name}:')
+            case ir.FunctionDefinition():
+                # emit(f'.L{insn.label.name}:')
+                emit(f'{insn.name}:')
+                function_table[insn.name] = insn.label.name
+                flag_definition = True
             case ir.LoadIntConst() | ir.LoadBoolConst:
                 emit(f'movq ${insn.value}, {locals.get_ref(insn.dest)}')
                 #TODO: doesn't work if insn.value is too large or too small
@@ -38,6 +47,15 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
                     )
                     intrinsic(args)
                     emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+                    if flag_definition:
+                        emit('ret')
+                        flag_definition = False
+                elif insn.fun.name in function_table:
+                    for arg, reg in zip(insn.args, ['%rdi', '%rsi']):  # Extend for more arguments as needed
+                        emit(f'movq {locals.get_ref(arg)}, {reg}')
+                    emit(f'call {insn.fun.name}')
+                    emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+
                 else:
                      assert insn.fun.name == 'print_int',"TODO: other functions"
                      assert len(insn.args) == 1 # todo: support more args
@@ -50,6 +68,8 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
                 emit(f'cmpq $0, {locals.get_ref(insn.condition)}')
                 emit(f'jne .L{insn.then_label.name}')
                 emit(f'jmp .L{insn.else_label.name}')
+            
+            
             
             case _:
                 raise Exception(f'Unknow instruction:{type(insn)}')

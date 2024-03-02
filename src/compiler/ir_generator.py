@@ -123,6 +123,9 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                     # Emit the label that we jump to when we don't want to go to the "then" branch.
                     instructions.append(l_end)
                     return var_then
+                #TODO
+                # else:
+                    
 
             case ast.UnaryOp():
                 var_right = visit(node.right, symbol_table)
@@ -146,24 +149,43 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                     return symbol_table.variables[node.name]
                 elif isinstance(symbol_table, ast.HierarchicalSymTab):
                     return visit(node, symbol_table.parent)
+                else:
+                    return Exception(f'{node.name} is not defined')
                 
             case ast.Return():
                 return visit(node.value, symbol_table)
             
             case ast.Function():
-                fun_label = new_label()
-                instructions.append(ir.FunctionDefinition(name=fun_label))
-                symbol_table.variables[node.name] = fun_label
+                if node.body is not None:
+                    fun_label = new_label()
+                    instructions.append(ir.FunctionDefinition(name=node.name,label=fun_label))
+                    # instructions.append(fun_label)
+                    symbol_table.variables[node.name] = fun_label
 
-                fun_symbol_table = ast.SymTab(variables={})
+                    fun_symbol_table = ast.SymTab(variables={})
 
-                for arg in node.args:
-                    var = new_var()
-                    fun_symbol_table.variables[arg.name] = var
+                    for arg in node.args:
+                        var = new_var()
+                        fun_symbol_table.variables[arg.name] = var
                 
-                for expression in node.body.expressions:
-                    visit(expression, fun_symbol_table)
+                    for expression in node.body.expressions:
+                        visit(expression, fun_symbol_table)
+                    # instructions.append(ir.Jump(label=l_end))
+                    # instructions.append(l_end)
 
+                else:
+                    args_vars = [visit(arg, symbol_table) for arg in node.args]
+                
+                    # Call instruction
+                    result_var = new_var()
+
+                    instructions.append(ir.Call(
+                        fun=IRVar(node.name),
+                        args=args_vars,
+                        dest=result_var
+                    ))
+
+                    return result_var
                 # if node.body is not None:
                 #     body_instructions = [visit(child) for child in node.body.expressions]
                     
@@ -222,16 +244,18 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
 
     # if end with semicolon
     var_result = visit(root_node)
-    instructions.append(ir.Call(
-        IRVar("print_int"),
-        [var_result],
-        new_var()
-    ))
+    # instructions.append(ir.Call(
+    #     IRVar("print_int"),
+    #     [var_result],
+    #     new_var()
+    # ))
     return instructions
 
-tokens = tokenize('var c=1; var d = -c;')
+tokens = tokenize('fun square(x: Int){return x*x} var a=2; return square(2)')
 ast_node = parse(tokens)
 typecheck(ast_node)
 ir_instructions = generate_ir(ast_node)
 print("\n".join([str(ins) for ins in ir_instructions]))
 asm_code = generate_assembly(ir_instructions)
+print(asm_code)
+assemble(asm_code, 'compiled_program')
