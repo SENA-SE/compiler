@@ -30,7 +30,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             comma_separated = ", ".join([f'"{e}"' for e in expected])
             raise Exception(f' expected one of: {comma_separated}')
         pos += 1
-        print(f'consumed {token}')
+        # print(f'consumed {token}')
         return token
 
     # This is the parsing function for integer literals.
@@ -77,7 +77,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
                 consume(';')
             args.append(parse_expression())
 
-        print(f'args{args}')
+        # print(f'args{args}')
         return args
 
     def parse_term() -> ast.Expression:
@@ -97,7 +97,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
     # "an identifier or an integer literal"
     # is called a "term".
     def parse_factor() -> ast.Expression:
-        print(peek().text,peek().type)
+        # print(peek().text,peek().type)
         if peek().text == '(':
             return parse_parenthesized()
         elif peek().text == 'if':

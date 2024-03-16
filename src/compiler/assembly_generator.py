@@ -32,9 +32,19 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
                 emit(f'{insn.name}:')
                 function_table[insn.name] = insn.label.name
                 flag_definition = True
-            case ir.LoadIntConst() | ir.LoadBoolConst:
-                emit(f'movq ${insn.value}, {locals.get_ref(insn.dest)}')
-                #TODO: doesn't work if insn.value is too large or too small
+            case ir.LoadIntConst():
+                if -2**31 <= insn.value<2**31:
+                    emit(f'movq ${insn.value}, {locals.get_ref(insn.dest)}')
+                else:
+                    emit(f'movabsq ${insn.value}, %rax')
+                    emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+            case ir.LoadBoolConst:
+                
+                if insn.value:  
+                    value = 1
+                else:
+                    value = 0
+                emit(f'movq ${value}, {locals.get_ref(insn.dest)}')
             case ir.Copy():
                 emit(f'movq {locals.get_ref(insn.source)}, %rax')
                 emit(f'movq %rax, {locals.get_ref(insn.dest)}')

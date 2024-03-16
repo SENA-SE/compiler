@@ -186,57 +186,7 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                     ))
 
                     return result_var
-                # if node.body is not None:
-                #     body_instructions = [visit(child) for child in node.body.expressions]
-                    
-                #     var = new_var()
-                #     var_result = new_var()
-                #     # var_right = getattr(node.body,'value', None)
-                #     # if isinstance(var_right, int):
-                #     #     instructions.append(ir.LoadIntConst(var_right, var))
-                #     # instructions.append(ir.Copy(source=var, dest=var_result))
-                #     body = node.body
-                #     instructions.append(ir.Copy)
-                #     symbol_table.variables[node.name] = var_result
-                #     return var_result
 
-
-                # else:
-                #     args = []
-                #     for arg in node.args:
-                #         args.append(visit(arg,symbol_table))
-                #     # var_result = visit(node)
-                #     instructions.append(ir.Call(
-                #         IRVar(node.name),
-                #         args,
-                #         new_var()
-                #     ))
-                    
-
-            #     # Assuming the Function node has a name, args (list of arguments), and a body (an Expression)
-            #     # First, create a label for the function entry
-            #     fun_label = Label(node.name)
-            #     instructions.append(fun_label)
-
-            #     # Create IRVars for each argument
-            #     arg_vars = [new_var() for _ in node.args]
-
-            #     # Assuming there's a mechanism to map function arguments to IRVars
-            #     # This could be a simple assignment for now, but you might need a more sophisticated approach
-            #     # for handling scopes and argument passing
-            #     for arg_name, arg_var in zip(node.args, arg_vars):
-            #         instructions.append(ir.Copy(source=IRVar(arg_name), dest=arg_var))
-
-            #     # Visit the body of the function
-            #     # This assumes the body is a single expression; if it's more complex, additional handling will be needed
-            #     body_var = visit(node.body)
-
-            #     # Assuming functions implicitly return the last evaluated expression
-            #     instructions.append(ir.Return(value=body_var))
-
-            #     # Return the function label as the result of visiting the function node
-            #     # This might be used to reference the function elsewhere
-            #     return fun_label
 
             case _:
                 raise Exception(f'Unsupported AST node {node}')
@@ -251,11 +201,11 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
     # ))
     return instructions
 
-tokens = tokenize('fun square(x: Int){return x*x} var a=2; return square(2)')
-ast_node = parse(tokens)
-typecheck(ast_node)
-ir_instructions = generate_ir(ast_node)
-print("\n".join([str(ins) for ins in ir_instructions]))
-asm_code = generate_assembly(ir_instructions)
-print(asm_code)
-assemble(asm_code, 'compiled_program')
+# tokens = tokenize('fun square(x: Int){return x*x} var a=2; return square(2)')
+# ast_node = parse(tokens)
+# typecheck(ast_node)
+# ir_instructions = generate_ir(ast_node)
+# print("\n".join([str(ins) for ins in ir_instructions]))
+# asm_code = generate_assembly(ir_instructions)
+# print(asm_code)
+# assemble(asm_code, 'compiled_program')
