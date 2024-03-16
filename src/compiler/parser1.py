@@ -15,6 +15,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             return Token(
                 type="end",
                 text="",
+                location=tokens[-1].location
             )
 
     # 'consume(expected)' returns the token at 'pos' and moves 'pos' forward.
@@ -25,10 +26,10 @@ def parse(tokens: list[Token]) -> ast.Expression:
         nonlocal pos
         token = peek()
         if isinstance(expected, str) and token.text != expected:
-            raise Exception(f' expected "{expected}"')
+            raise Exception(f'{peek().location} :  expected "{expected}"')
         if isinstance(expected, list) and token.text not in expected:
             comma_separated = ", ".join([f'"{e}"' for e in expected])
-            raise Exception(f' expected one of: {comma_separated}')
+            raise Exception(f'{peek().location} :  expected one of: {comma_separated}')
         pos += 1
         # print(f'consumed {token}')
         return token
@@ -38,7 +39,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
     # moves past it, and returns a 'Literal' AST node containing the integer from the token.
     def parse_int_literal() -> ast.Literal:
         if peek().type != 'int_literal':
-            raise Exception(f' expected an integer literal')
+            raise Exception(f'{peek().location} :  expected an integer literal')
         token = consume()
         return ast.Literal(int(token.text))
 
@@ -51,7 +52,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             consume(token.text)
             return ast.Literal(bool(False))
         if peek().type != 'identifier':
-            raise Exception(f' expected an identifier')
+            raise Exception(f'{peek().location} :  expected an identifier')
         else:
             consume()
             next_token = peek()
@@ -122,7 +123,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             return parse_identifier()
 
         else:
-            raise Exception(f'expected an integer literal or an identifier, but got {peek()}')
+            raise Exception(f'{peek().location} : expected an integer literal or an identifier, but got {peek()}')
     
     def parse_parenthesized() -> ast.Expression:
         consume('(')
@@ -231,7 +232,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             consume('Unit')
             base_type =  ast.Unit
         else:
-            raise Exception(f'Unsupported type: {peek().text}')
+            raise Exception(f'{peek().location} : Unsupported type {peek().text}')
 
         if peek().text == '*':
             consume('*')
@@ -259,7 +260,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
             return ast.VariableDeclaration(name=name, assignment=initializer, variable_type=type_annotation)
         else:
-            raise Exception(f'Expected an identifier')
+            raise Exception(f'{peek().location} : Expected an identifier')
     
     def parse_function_definition() -> ast.Function:
         consume('fun')
@@ -279,7 +280,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             
             return ast.Function(name=name, args=params, return_type=return_type, body=body)
         else:
-            raise Exception(f'Expected an identifier')
+            raise Exception(f'{peek().location} : Expected an identifier')
 
     # def parse_module(tokens: List[Token]) -> ast.Module:
     #     functions = []
@@ -326,7 +327,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
                     elif peek().text not in ('}', 'end') and not isinstance(expression, ast.IfExpression | ast.WhileExpression | ast.Function):
                         # If the expression is not an if-else statement, and we're not at the end or facing a closing brace, expect a semicolon.
                         #TODO: no semicolon is allowed after function definition
-                        raise Exception("Expected ';' after expression within a block, unless it's an if-else statement.")
+                        raise Exception("{peek().location} : Expected ';' after expression within a block, unless it's an if-else statement.")
 
                     expressions.append(expression)
                 else:   
@@ -372,7 +373,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             raise Exception('No input')
         expressions = parse_multiple_expressions()
         if pos!= len(tokens):
-            raise Exception(f'Only {pos} tokens were parsed')
+            raise Exception(f'{peek().location} : Only {pos} tokens were parsed')
         
         if len(expressions) ==1: 
             return expressions[0]

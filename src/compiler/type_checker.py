@@ -8,7 +8,6 @@ SymbolList = {
     'or': [Bool, Bool, Bool],
     'print_int': [Int, Unit],
     'print_bool': [Bool, Unit],
-    # and so on...
 }
 
 
@@ -106,9 +105,7 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
         case ast.Function():
             fun_arg_type = []
-
-
-            
+          
             if node.body is None:
                 fun_arg_type = symbol_table.variables[node.name]
                 arg_types = [typecheck(arg, symbol_table) for arg in node.args]

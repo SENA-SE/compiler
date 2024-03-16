@@ -70,6 +70,13 @@ def test_parser_multiplication() -> None:
             right=Literal(5)
         )
     )
+
+def test_parser_garbage() -> None:
+    try:
+         parse(tokenize('a + b c'))
+    except Exception:
+        assert True
+
 def test_parser_empty_input() -> None:
     try:
          parse(tokenize([] ))
@@ -112,6 +119,17 @@ def test_parser_function() -> None:
         left=Identifier(name='y'),
         operation='+',
         right=Identifier(name='z'))]
+    )
+
+def test_parser_function_argument_expression() -> None:
+    assert parse(tokenize('f(a+b, g(a))')) == Function(
+        name='f',
+        args=[BinaryOp(        
+        left=Identifier(name='a'),
+        operation='+',
+        right=Identifier(name='b')),
+        Function(name='g',args=[Identifier(name='a')])
+        ]
     )
 
 def test_parser_unary_operation() -> None:
@@ -288,6 +306,7 @@ def test_parser_variable_declaration() -> None:
         name='a',
         assignment=Literal(1)
     )
+
 def test_parser_variable_declaration_with_type() -> None:
     assert parse(tokenize('var a:Int = 1+1')) == VariableDeclaration(
         name='a',
@@ -298,6 +317,7 @@ def test_parser_variable_declaration_with_type() -> None:
         ),
         variable_type=Int
     )
+    
 def test_parser_assignment() -> None:
     assert parse(tokenize('a = b + c')) == BinaryOp(
         left=Identifier('a'),
@@ -395,5 +415,6 @@ def test_parser_parse_function_declaration() -> None:
         ])
 
         )
+
 
 
