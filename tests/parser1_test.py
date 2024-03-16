@@ -1,6 +1,6 @@
 
 
-from compiler.ast import AddressOf, BinaryOp, Block, Dereference, IfExpression, Int, Literal, Identifier, Function, PointerType, UnaryOp, VariableDeclaration, WhileExpression, Return
+from compiler.ast import AddressOf, BinaryOp, Block, Bool, Dereference, IfExpression, Int, Literal, Identifier, Function, PointerType, UnaryOp, Unit, VariableDeclaration, WhileExpression, Return
 from compiler.parser1 import parse
 from compiler.tokenizer import tokenize
 
@@ -317,7 +317,14 @@ def test_parser_variable_declaration_with_type() -> None:
         ),
         variable_type=Int
     )
-    
+    assert parse(tokenize('var a: Bool = true')) == VariableDeclaration(
+        name='a',
+        assignment=Literal(True),
+        variable_type=Bool
+    )
+
+
+
 def test_parser_assignment() -> None:
     assert parse(tokenize('a = b + c')) == BinaryOp(
         left=Identifier('a'),
@@ -346,6 +353,8 @@ def test_parser_while() -> None:
         do=Block([Identifier('b')])
     )
     
+
+
 
 # def test_parser_pointer_type_annotation():
 #     source_code = "var x: Int* = &y"
