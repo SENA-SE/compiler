@@ -67,6 +67,8 @@ def parse(tokens: list[Token]) -> ast.Expression:
                 arg_type = parse_type_annotation()
                 return ast.VariableDeclaration(name=token.text, variable_type=arg_type)
             else:   # no an if expression
+                if token.text.isdigit() or (token.text[0].isdigit() and not token.text.isidentifier()):
+                    raise Exception(f'{next_token.location} : An identifier cannot start with a digit')
                 return ast.Identifier(token.text)
     
     def parse_arguments()-> list[ast.Expression]:

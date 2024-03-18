@@ -150,6 +150,15 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
             else:
                 return typecheck(node.value, symbol_table)
 
+        case ast.WhileExpression():
+            condition_type = typecheck(node.condition, symbol_table)
+            if condition_type is not ast.Bool:
+                raise Exception(f'Expected a boolean value but get {node.condition}')
+            do = node.do
+            if isinstance(do, ast.Block):
+                do = do.expressions[len(do.expressions)-1]
+
+            return Unit
 
         case _:
             raise Exception(f'{node} is not supported')
