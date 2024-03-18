@@ -366,35 +366,3 @@ def parse(tokens: list[Token]) -> ast.Expression:
     
     return parse_all()
 
-
-# def test_parser_parse_variable_declaration() -> None:
-#     assert parse(tokenize('fun square(x:Int):Int{return x*x}')) == ast.Function(
-#         name='square',
-#         args=[ast.VariableDeclaration(
-#             name='x',
-#             variable_type=ast.Int
-#             ),
-#         ast.VariableDeclaration(
-#             name='y',
-#             variable_type=ast.Int
-#             )
-#         ],
-#         return_type=ast.Int,
-#         body=ast.Block([
-#         ast.Return(value=ast.BinaryOp(
-#             left=ast.Identifier(name='x'),
-#             operation='*',
-#             right=ast.Identifier(name='x')
-#         ))
-#     ])
-
-#     )
-# test_parser_parse_variable_declaration()
-
-# parse(tokenize("""
-
-# fun print_int_twice(x: Int) {
-#     print_int(x);
-# }
-
-# """))

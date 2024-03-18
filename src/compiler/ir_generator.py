@@ -230,20 +230,6 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                 raise Exception(f'Unsupported AST node {node}')
             
 
-    # if end with semicolon
     var_result = visit(root_node)
-    # instructions.append(ir.Call(
-    #     IRVar("print_int"),
-    #     [var_result],
-    #     new_var()
-    # ))
-    return instructions
 
-# tokens = tokenize('if true then print_int(1) else print_int(2)')
-# ast_node = parse(tokens)
-# typecheck(ast_node)
-# ir_instructions = generate_ir(ast_node)
-# print("\n".join([str(ins) for ins in ir_instructions]))
-# asm_code = generate_assembly(ir_instructions)
-# print(asm_code)
-# assemble(asm_code, 'compiled_program')
+    return instructions

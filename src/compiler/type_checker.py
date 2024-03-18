@@ -154,7 +154,4 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
         case _:
             raise Exception(f'{node} is not supported')
         
-# def test_type_checker_if_else_unit() -> None:
-#     assert typecheck(parse(tokenize('var x:Int = 1+1'))) == Int
-# test_type_checker_if_else_unit()
 

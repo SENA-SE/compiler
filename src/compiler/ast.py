@@ -121,14 +121,3 @@ class AddressOf(Expression):
 class Dereference(Expression):
     operand: Expression
 
-# @dataclass
-# class FunctionDefinition(Expression):
-#     name: str
-#     params: list[VariableDeclaration]
-#     return_type: Type
-#     body: Expression
-
-# @dataclass
-# class Module:
-#     functions: list[FunctionDefinition]
-#     expressions: list[Expression]  # Top-level expressions
