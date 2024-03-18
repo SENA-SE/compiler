@@ -63,6 +63,6 @@ def tokenize(source_code: str) -> List[Token]:
     
     return result
 
-source_code_combined = "hello"
-result = tokenize(source_code_combined)
-print(",\n".join([str(ins) for ins in result]))
+# source_code_combined = "hello"
+# result = tokenize(source_code_combined)
+# print(",\n".join([str(ins) for ins in result]))

@@ -32,7 +32,7 @@ def unary_minus(a: IntrinsicArgs) -> None:
 @_intrinsic("unary_not")
 def unary_not(a: IntrinsicArgs) -> None:
     a.emit(f'movq {a.arg_refs[0]}, {a.result_register}')
-    a.emit(f'xorq 0x1, {a.result_register}')
+    a.emit(f'xorq $1, {a.result_register}')
 
 
 @_intrinsic("+")

@@ -75,7 +75,7 @@ class LibraryFunctionCalled(Expression):
     name: str
     args: list[VariableDeclaration]
     return_type: Type = None
-    operation: Expression = None
+    # operation: Expression = None
 
 @dataclass
 class FunctionCalled(Expression):

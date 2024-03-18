@@ -84,9 +84,6 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                     return var_result
             
             case ast.VariableDeclaration():
-                # var_right = visit(node.right)
-
-
                 var_right = getattr(node.assignment,'value', None)
                 if var_right is not None:
                     var = new_var()
@@ -115,7 +112,10 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
 
                     instructions.append(l_then)
                     var_then = visit(node.then_branch, symbol_table)
+                    var_result = new_var()
+                    instructions.append(ir.Copy(var_then, var_result))
                     instructions.append(ir.Jump(l_end))
+
                     instructions.append(l_else)
                     var_else = visit(node.else_branch, symbol_table)
                     instructions.append(ir.Copy(var_else, var_then))
@@ -123,8 +123,22 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                     # Emit the label that we jump to when we don't want to go to the "then" branch.
                     instructions.append(l_end)
                     return var_then
-                #TODO
-                # else:
+            
+            case ast.WhileExpression():
+                l_start = new_label()
+                l_do = new_label()
+                l_end = new_label()
+
+                instructions.append(l_start)
+                condition = visit(node.condition, symbol_table)
+                instructions.append(ir.CondJump(condition=condition, then_label=l_do, else_label=l_end))
+
+                instructions.append(l_do)
+                var_result = visit(node.do, symbol_table)
+                instructions.append(ir.Jump(l_start))
+
+                instructions.append(l_end)
+                return var_result
                     
 
             case ast.UnaryOp():
@@ -156,10 +170,36 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                 return visit(node.value, symbol_table)
             
             case ast.Function():
-                if node.body is not None:
+                if node.name in ['print_int','print_bool','read_int']:
+                    match node.name:
+                        case 'print_int':
+                            var_result = new_var()
+                            var_args = visit(node.args[0], symbol_table)
+                            instructions.append(ir.Call(
+                                fun=IRVar(node.name),
+                                args=[var_args],
+                                dest=var_result
+                            ))
+                            return var_result
+                        case 'print_bool':
+                            var_result = new_var()
+                            var_args = visit(node.args[0], symbol_table)
+                            instructions.append(ir.Call(
+                                fun=IRVar(node.name),
+                                args=[var_args],
+                                dest=var_result
+                            ))
+                        case 'read_int':
+                            var_result = new_var()
+                            instructions.append(ir.Call(
+                                fun=IRVar(node.name),
+                                args=[],
+                                dest=var_result
+                            ))
+                elif node.body is not None:
                     fun_label = new_label()
                     instructions.append(ir.FunctionDefinition(name=node.name,label=fun_label))
-                    # instructions.append(fun_label)
+
                     symbol_table.variables[node.name] = fun_label
 
                     fun_symbol_table = ast.SymTab(variables={})
@@ -170,8 +210,6 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                 
                     for expression in node.body.expressions:
                         visit(expression, fun_symbol_table)
-                    # instructions.append(ir.Jump(label=l_end))
-                    # instructions.append(l_end)
 
                 else:
                     args_vars = [visit(arg, symbol_table) for arg in node.args]
@@ -201,7 +239,7 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
     # ))
     return instructions
 
-# tokens = tokenize('fun square(x: Int){return x*x} var a=2; return square(2)')
+# tokens = tokenize('if true then print_int(1) else print_int(2)')
 # ast_node = parse(tokens)
 # typecheck(ast_node)
 # ir_instructions = generate_ir(ast_node)

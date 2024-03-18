@@ -15,6 +15,8 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
     emit('.global main')
     emit('.type main, @function')
     emit('.extern print_int')
+    emit('.extern print_bool')
+    emit('.extern read_int')
     
     emit('.section .text')
     emit('main:')
@@ -27,27 +29,31 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
         match insn:
             case ir.Label():
                 emit(f'.L{insn.name}:')
+
             case ir.FunctionDefinition():
                 # emit(f'.L{insn.label.name}:')
                 emit(f'{insn.name}:')
                 function_table[insn.name] = insn.label.name
                 flag_definition = True
+
             case ir.LoadIntConst():
                 if -2**31 <= insn.value<2**31:
                     emit(f'movq ${insn.value}, {locals.get_ref(insn.dest)}')
                 else:
                     emit(f'movabsq ${insn.value}, %rax')
                     emit(f'movq %rax, {locals.get_ref(insn.dest)}')
-            case ir.LoadBoolConst:
-                
+
+            case ir.LoadBoolConst():        
                 if insn.value:  
                     value = 1
                 else:
                     value = 0
                 emit(f'movq ${value}, {locals.get_ref(insn.dest)}')
+
             case ir.Copy():
                 emit(f'movq {locals.get_ref(insn.source)}, %rax')
                 emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+
             case ir.Call():
                 if (intrinsic := all_intrinsics.get(insn.fun.name)) is not None:
                     args = IntrinsicArgs(
@@ -67,10 +73,15 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
                     emit(f'movq %rax, {locals.get_ref(insn.dest)}')
 
                 else:
-                     assert insn.fun.name == 'print_int',"TODO: other functions"
-                     assert len(insn.args) == 1 # todo: support more args
-                     emit(f'movq {locals.get_ref(insn.args[0])}, %rdi')
-                     emit('call print_int')
+                     assert insn.fun.name in ['print_int', 'print_bool','read_int']
+                     if len(insn.args) == 1: # todo: support more args
+                        emit(f'movq {locals.get_ref(insn.args[0])}, %rdi')
+                        emit(f'call {insn.fun.name}')
+                        # read_int
+                     elif len(insn.args) == 0:
+                         emit(f'call {insn.fun.name}')
+                         emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+
             case ir.Jump():
                 emit(f'jmp .L{insn.label.name}')
 

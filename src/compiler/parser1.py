@@ -282,17 +282,6 @@ def parse(tokens: list[Token]) -> ast.Expression:
         else:
             raise Exception(f'{peek().location} : Expected an identifier')
 
-    # def parse_module(tokens: List[Token]) -> ast.Module:
-    #     functions = []
-    #     expressions = []
-    #     while not all tokens are consumed:
-    #         if next tokens indicate a function definition:
-    #             functions.append(parse_function_definition())
-    #         else:
-    #             expressions.append(parse_expression())
-    #     return ast.Module(functions=functions, expressions=expressions)
-
-
     def parse_multiple_expressions() -> list[ast.Expression]:
         expressions: list[ast.Expression] = []
         result: ast.Expression = ast.Literal(None)
@@ -322,11 +311,9 @@ def parse(tokens: list[Token]) -> ast.Expression:
 
                     if peek().text == ';':
                         consume(';')
-                    # elif peek().text != '}' and peek().type != 'end':
-                    #     raise Exception(f'{pos}: Expected \';\' after expression within a block')
                     elif peek().text not in ('}', 'end') and not isinstance(expression, ast.IfExpression | ast.WhileExpression | ast.Function):
                         # If the expression is not an if-else statement, and we're not at the end or facing a closing brace, expect a semicolon.
-                        #TODO: no semicolon is allowed after function definition
+                        # no semicolon is allowed after function definition
                         raise Exception("{peek().location} : Expected ';' after expression within a block, unless it's an if-else statement.")
 
                     expressions.append(expression)
@@ -335,9 +322,6 @@ def parse(tokens: list[Token]) -> ast.Expression:
                         
 
         expressions.append(result)
-        # if peek().text != ';':
-        #     raise Exception("Expected ';' after expression")
-        # consume(';')
         return expressions
     # This is our main parsing function for this example.
     # To parse "integer + integer" expressions,
@@ -381,7 +365,6 @@ def parse(tokens: list[Token]) -> ast.Expression:
             return ast.Block(expressions)
     
     return parse_all()
-    # return parse_expression()
 
 
 # def test_parser_parse_variable_declaration() -> None:
