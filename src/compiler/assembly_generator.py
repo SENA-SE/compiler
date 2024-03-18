@@ -72,15 +72,14 @@ def generate_assembly(instructions: list[ir.Instruction]) -> str:
                     emit(f'call {insn.fun.name}')
                     emit(f'movq %rax, {locals.get_ref(insn.dest)}')
 
-                else:
-                     assert insn.fun.name in ['print_int', 'print_bool','read_int']
-                     if len(insn.args) == 1: # todo: support more args
+                elif insn.fun.name in ['print_int', 'print_bool','read_int']:
+                     if len(insn.args) == 0:
+                         emit(f'call read_int')
+                         emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+                     elif len(insn.args) == 1:     # read_int
                         emit(f'movq {locals.get_ref(insn.args[0])}, %rdi')
                         emit(f'call {insn.fun.name}')
-                        # read_int
-                     elif len(insn.args) == 0:
-                         emit(f'call {insn.fun.name}')
-                         emit(f'movq %rax, {locals.get_ref(insn.dest)}')
+
 
             case ir.Jump():
                 emit(f'jmp .L{insn.label.name}')

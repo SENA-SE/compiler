@@ -1,0 +1,95 @@
+# describe: binary operation
+print_int(1 + 1);
+expect:: 2
+**********
+# describe: binary operation
+print_int(1 - 1);
+expect: 0
+**********
+# describe: binary operation
+print_int(10 * 2);
+expect: 20
+**********
+# describe: binary operation
+print_int(10 / 2);
+expect: 5
+**********
+# describe: binary operation
+print_int(10 % 3);
+expect: 1
+**********
+# describe: binary operation: and, ==, <
+print_bool(1==1 and 1<2)
+expect: true
+**********
+# describe: binary operation: or, !=, >=
+print_bool(1!=1 or 1>=2)
+expect: false
+**********
+# describe: library function: read_int
+var a = read_int();
+input 12345
+print_int(a);
+expect: 12345
+**********
+# describe: unary operation
+print_bool(not true)
+expect: false
+**********
+# describe: parentheses
+print_int(2*(2+3));
+expect: 10
+**********
+# describe: variable declaration
+var x = 0;
+print_int(x);
+expect: 0
+**********
+# describe: variable declaration with type
+var x: Int = 0;
+print_int(x);
+expect: 0
+**********
+# describe: if-then-else statement
+if 2>1 then print_int(2*(2+3)) else print_int(3*3)
+expect: 10
+**********
+# describe: if-then statement
+var a = 0;
+if 2>1 then a = 2;
+print_int(a);
+expect: 2
+**********
+# describe: blocks
+var a = 1;
+{
+    var a = 3;
+}
+print_int(a + 1);
+expect: 2
+**********
+# describe: variable declaration in blocks, last semicolon in block is optional
+var a=1; 
+{
+    var a=10; 
+    a = a+1
+} 
+print_int(a);
+expect: 1
+**********
+# describe: variable operation in blocks
+var a=1; 
+{
+    a = a+2;
+    a = a+1;
+} 
+print_int(a);
+expect: 4
+**********
+# describe: while expression
+var a = -1; 
+while a<2 do {
+    a=a+1;
+} 
+print_int(a);
+expect: 2

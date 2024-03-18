@@ -8,7 +8,7 @@ This is my implementation of the compiler project for `CSM14204 Compilers, sprin
 - [Running](#running)
 - [Structure](#structure)
 - [Features](#features)
-- [Unit Tests](#unit_tests)
+- [Unit and End-to-End Tests](#unit_tests)
 - [Issues](#issues)
 
 ## Setup
@@ -23,10 +23,12 @@ i.e. `curl -sSL https://install.python-poetry.org | python3 -`
 
 **Install dependencies:**
  - Install Python 3.11.7
-`pyenv install`
+
+	`pyenv install`
 
 - Install dependencies specified in `pyproject.toml`
-`poetry install`
+
+	`poetry install`
 
 
 ## Structure
@@ -35,13 +37,14 @@ i.e. `curl -sSL https://install.python-poetry.org | python3 -`
 └── compiler_project
     ├── src                 # source files
     ├── tests               # unit tests
+    ├── test_programs       # end-to-end tests
     ├── README.md
-    └── 
 ```
 
-## Running the compiler
+## Running
 
 Use direct input to run the compiler, or run the compiler on a source code file:
+
 `./compiler.sh <command> <<< [input]`
 ```
 COMMANDS:
@@ -51,7 +54,7 @@ USAGE:
 	./compiler.sh interpret <<< [input]
 	./compiler.sh ir <<< [input]
 	./compiler.sh asm <<< [input]
-	./compiler.sh compile <<< [input] && [compiled filename]
+	./compiler.sh compile <<< [input] && [compiled file]
 
 USAGE EXAMPLES:
 	✅./compiler.sh ir <<< 'if 2>1 then print_int(2*(2+3)) else print_int(3*3)' 
@@ -80,15 +83,15 @@ Implemented features so far:
 - Boolean literals
 - Unary operators `-` and `not`
 - Binary operators `+`, `-`, `*`, `/`, `%`, `==`, `!=`, `<`, `<=`, `>`, `>=`, `and`, `or`,`=`
---   Operator  `=`  is right-associative.
---   All other operators are left-associative.
---   With precedence
-- Builtin functions `print_int`,  `print_bool`
+  - Operator  `=`  is right-associative.
+  - All other operators are left-associative.
+  - With precedence
+- Builtin functions `print_int`,  `print_bool`, `read_int`
 -   Parentheses
 - Blocks of statements
 - Variables (typed and untyped)
---   Untyped variable declaration:  `var ID = E`  where  `ID`  is an identifier.
---   Typed variable declaration:  `var ID: T = E`  where  `ID`  is an identifier and  `T`  is a type expression
+  - Untyped variable declaration:  `var ID = E`  where  `ID`  is an identifier.
+  - Typed variable declaration:  `var ID: T = E`  where  `ID`  is an identifier and  `T`  is a type expression
 - Assignments
 - if-then and if-then-else
 - While loops
@@ -96,9 +99,10 @@ Implemented features so far:
 - `break` and `continue`
 
 
-## Unit Tests
+## Unit and End-to-End Tests
 
-To run unit tests:
+To run unit tests and end-to-end tests:
+
 	`poetry  run  pytest  -vv  tests/`
 
 
@@ -112,4 +116,4 @@ fun square(x: Int): Int {
 }
 print_int(square(2))
 ```
-When using the command `interpret` , the output on the console is `4`. However, when attempting to compile, although the intermediate representation (IR) instructions appear to be reasonable, for some reason compilation still fails.
+When using the command `interpret` , the output printed on the console is `4`. However, when using the command `compile`, although the intermediate representation (IR) instructions appear to be reasonable, for some reason compilation still fails.

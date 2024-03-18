@@ -12,6 +12,7 @@ SymbolList = {}
 def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
     next_var_num = 1
     next_label_num = 1
+    loop_labels = []    # stack to keep track of loop labels
     def new_var() -> IRVar:
         nonlocal next_var_num
         # print(next_var_num)
@@ -123,11 +124,24 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                     # Emit the label that we jump to when we don't want to go to the "then" branch.
                     instructions.append(l_end)
                     return var_then
-            
+                else:
+                    l_then = new_label()
+                    l_end = new_label()
+
+                    var_condition = visit(node.condition, symbol_table)
+                    instructions.append(ir.CondJump(var_condition, l_then, l_end))
+                    instructions.append(l_then)
+
+                    var_result = visit(node.then_branch, symbol_table)
+                    instructions.append(l_end)
+                    return var_result
             case ast.WhileExpression():
                 l_start = new_label()
                 l_do = new_label()
                 l_end = new_label()
+
+                # Push the current loop's start and end labels onto the stack
+                loop_labels.append((l_start, l_end))
 
                 instructions.append(l_start)
                 condition = visit(node.condition, symbol_table)
@@ -138,8 +152,9 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                 instructions.append(ir.Jump(l_start))
 
                 instructions.append(l_end)
+                loop_labels.pop()
                 return var_result
-                    
+                
 
             case ast.UnaryOp():
                 var_right = visit(node.right, symbol_table)
@@ -189,6 +204,7 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                                 args=[var_args],
                                 dest=var_result
                             ))
+                            return var_result
                         case 'read_int':
                             var_result = new_var()
                             instructions.append(ir.Call(
@@ -196,7 +212,8 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                                 args=[],
                                 dest=var_result
                             ))
-                elif node.body is not None:
+                            return var_result
+                elif node.body is not None: # define a function
                     fun_label = new_label()
                     instructions.append(ir.FunctionDefinition(name=node.name,label=fun_label))
 
@@ -211,10 +228,9 @@ def generate_ir(root_node: ast.Expression) -> list[ir.Instruction]:
                     for expression in node.body.expressions:
                         visit(expression, fun_symbol_table)
 
-                else:
+                else:   # call a function
                     args_vars = [visit(arg, symbol_table) for arg in node.args]
                 
-                    # Call instruction
                     result_var = new_var()
 
                     instructions.append(ir.Call(

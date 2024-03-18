@@ -61,10 +61,6 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
         case ast.Continue():
             raise ContinueException
 
-
-        
-        
-        
         case ast.BinaryOp():
             if isinstance(node.left, ast.Identifier) and node.operation in ['=']:
                 current_symbol_table = symbol_table
@@ -80,7 +76,8 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             a = interpret(node.left, symbol_table)
             b = interpret(node.right, symbol_table)
-            #while a,b are expressions...
+
+            #while a,b are expressions
             if isinstance(a, ast.Expression):
                 a = interpret(a, symbol_table)
             if isinstance(b, ast.Expression):
@@ -154,7 +151,7 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
         
         case ast.Block():
             variables = ast.HierarchicalSymTab({}, symbol_table)
-            # y = node.expressions[len(node.expressions)-1]
+
             for i in range(0, len(node.expressions)-1):
                 result = interpret(node.expressions[i], variables)
                 if isinstance(result, ast.FunctionCalled | ast.LibraryFunctionCalled):
@@ -214,16 +211,18 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                     return None
                 
         case ast.Function():
+            # defining a function
             if node.body is not None:
                 name = node.name
                 body = node.body
                 symbol_table.variables[name] = node
 
                 return symbol_table
+            # calling a function
             else:
                 name = node.name
                 if node.name in symbol_table.variables: 
-
+                    # calling a library function
                     if name in library_functions:
                         top_symbol_table = symbol_table
                         while isinstance(top_symbol_table, ast.HierarchicalSymTab):
@@ -233,9 +232,9 @@ def interpret(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
                         operation_function = top_symbol_table.variables[node.name]
                         args = node.args
                         variables = ast.HierarchicalSymTab({}, symbol_table)
-                        # interpret(ast.LibraryFunctionCalled(name=name, args=args), variables)
-                        return ast.LibraryFunctionCalled(name=name, args=args)
 
+                        return ast.LibraryFunctionCalled(name=name, args=args)
+                    # calling a user-defined function
                     else:
                         body = symbol_table.variables[name].body
                         return_type = symbol_table.variables[name].return_type

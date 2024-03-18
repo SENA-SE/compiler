@@ -8,6 +8,7 @@ SymbolList = {
     'or': [Bool, Bool, Bool],
     'print_int': [Int, Unit],
     'print_bool': [Bool, Unit],
+    'read_int': [Unit, Int]
 }
 
 
@@ -42,7 +43,7 @@ def typecheck(node: ast.Expression, symbol_table: ast.SymTab = ast.SymTab(variab
 
             t1 = typecheck(node.left)
             t2 = typecheck(node.right)
-            if node.operation in ['+','-','*','-','%']:
+            if node.operation in ['+','-','*','-','%','/']:
                 if t1 is not Int or t2 is not Int:
                     raise Exception(f'Expected two integer numbers, but got {t1} and {t2}')
                 node.type = Int

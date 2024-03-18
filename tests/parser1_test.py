@@ -353,34 +353,6 @@ def test_parser_while() -> None:
         do=Block([Identifier('b')])
     )
     
-
-
-
-# def test_parser_pointer_type_annotation():
-#     source_code = "var x: Int* = &y"
-#     tokens = tokenize(source_code)
-#     parsed_expression = parse(tokens)
-
-#     # Assert that the parsed AST matches the expected AST
-#     assert parsed_expression == VariableDeclaration(
-#         name="x",
-#         variable_type=PointerType(base_type=Int),
-#         assignment=AddressOf(operand=Identifier(name="y"))
-#     )
-
-# def test_parser_pointer_dereference():
-#     # Test parsing of a dereference operation
-#     source_code = "*p"
-#     tokens = tokenize(source_code)
-#     parsed_expression = parse(tokens)
-
-#     # Construct the expected AST
-#     expected_ast = Dereference(operand=Identifier(name="p"))
-
-#     # Assert that the parsed AST matches the expected AST
-#     assert parsed_expression == expected_ast, "Failed to parse pointer dereference operation correctly"
-    
-
 def test_parser_parse_function_declaration() -> None:
     assert parse(tokenize('fun square(x:Int, y:Int):Int{return x*x}')) == Function(
         name='square',
